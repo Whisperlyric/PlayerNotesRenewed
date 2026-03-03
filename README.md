@@ -42,10 +42,6 @@ Your player lists are stored locally and not sent to any server.
 - [Fabric API](https://modrinth.com/mod/fabric-api) (required)
 - [ModMenu](https://modrinth.com/mod/modmenu) (optional, for config GUI access)
 
-## Contact / 联系方式
-
-GitHub: https://github.com/Whisperlyric
-
 ---
 
 # Player Notes Renewed (中文)
