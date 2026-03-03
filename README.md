@@ -1,8 +1,3 @@
-## Releases
-The only official releases channel is: https://modrinth.com/project/player-notes
-
----
-
 # Player Notes Renewed
 
 ## Features
