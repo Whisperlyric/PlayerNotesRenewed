@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "playernotes",
+  "version": "${version}",
+  "name": "PlayerNotes Renewed",
+  "description": "Manage player prefix lists with GUI. Supports multiple lists, custom colors/styles, name tag and tablist highlight.",
+  "authors": ["LucasEDVK aka LucimannHD", "whisperlyric"],
+  "contact": {
+    "homepage": "https://github.com/Whisperlyric/PlayerNotesRenewed",
+    "sources": "https://github.com/Whisperlyric/PlayerNotesRenewed",
+    "issues": "https://github.com/Whisperlyric/PlayerNotesRenewed/issues"
+  },
+  "license": "CC-BY-SA-4.0",
+  "icon": "assets/playernotes/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.wsplrc.playernotesrenewed.client.main.PlayerNotesClient"
+    ],
+    "modmenu": [
+      "dev.wsplrc.playernotesrenewed.client.compat.modmenu.ModMenuImpl"
+    ]
+  },
+  "mixins": [
+    "playernotesrenewed.mixins.json"
+  ],
+  "depends": {
+    "fabric-api": ">=0.139.5",
+    "minecraft": "~1.21.11",
+    "midnightlib": ">=1.6.0"
+  },
+  "suggests": {
+    "modmenu": ">=13.0.0"
+  }
+}
