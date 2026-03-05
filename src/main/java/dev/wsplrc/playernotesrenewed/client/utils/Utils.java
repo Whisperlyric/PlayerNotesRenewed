@@ -23,14 +23,7 @@ public class Utils {
     public static String getPlayerPrefixes(String uuid) {
         String normalizedUuid = normalizeUuid(uuid);
         List<String> prefixes = NoteListManager.getPrefixesForPlayer(normalizedUuid);
-        if (prefixes.isEmpty()) {
-            return "";
-        }
-        StringBuilder result = new StringBuilder();
-        for (String prefix : prefixes) {
-            result.append(prefix).append(" ");
-        }
-        return result.toString();
+        return buildPrefixString(prefixes);
     }
 
     public static String getPlayerPrefixesByProfile(GameProfile profile) {
@@ -39,12 +32,16 @@ public class Utils {
         if (prefixes.isEmpty()) {
             prefixes = NoteListManager.getPrefixesForPlayerByName(profile.name());
         }
-        if (prefixes.isEmpty()) {
+        return buildPrefixString(prefixes);
+    }
+
+    private static String buildPrefixString(List<String> prefixes) {
+        if (prefixes == null || prefixes.isEmpty()) {
             return "";
         }
         StringBuilder result = new StringBuilder();
         for (String prefix : prefixes) {
-            result.append(prefix).append(" ");
+            result.append("§r").append(prefix).append(" ");
         }
         return result.toString();
     }
