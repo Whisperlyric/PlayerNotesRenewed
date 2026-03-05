@@ -37,14 +37,15 @@ public class PlayerListEditScreen extends Screen {
         super.init();
 
         int leftColumnX = 10;
+        int leftColumnWidth = Math.min(this.width / 2 - 30, 200);
         int rightColumnX = this.width / 2 + 10;
-        int fieldWidth = this.width / 2 - 30;
+        int rightColumnWidth = this.width / 2 - 30;
 
-        nameField = new EditBox(this.font, leftColumnX, 30, fieldWidth, 20, Component.translatable("playernotes.gui.label.list_name"));
+        nameField = new EditBox(this.font, leftColumnX, 30, leftColumnWidth, 20, Component.translatable("playernotes.gui.label.list_name"));
         nameField.setValue(noteList.getName());
         this.addRenderableWidget(nameField);
 
-        prefixField = new EditBox(this.font, leftColumnX, 60, fieldWidth, 20, Component.translatable("playernotes.gui.label.prefix"));
+        prefixField = new EditBox(this.font, leftColumnX, 60, leftColumnWidth, 20, Component.translatable("playernotes.gui.label.prefix"));
         prefixField.setValue(noteList.getPrefix());
         this.addRenderableWidget(prefixField);
 
@@ -61,29 +62,41 @@ public class PlayerListEditScreen extends Screen {
                         this.minecraft.setScreen(new PrefixFormatHelpScreen(this));
                     }
                 })
-                .size(120, 20)
+                .size(Math.min(120, leftColumnWidth), 20)
                 .pos(leftColumnX, 115)
                 .build());
 
-        playersWidget = new PlayerListPlayersWidget(this.minecraft, fieldWidth, this.height - 150, 30, 25, noteList);
+        int listHeight = this.height - 180;
+        playersWidget = new PlayerListPlayersWidget(this.minecraft, rightColumnWidth, listHeight, 30, 25, noteList);
+        playersWidget.updateSizeAndPosition(rightColumnWidth, listHeight, 30);
         playersWidget.setX(rightColumnX);
         this.addRenderableWidget(playersWidget);
 
-        addPlayerField = new EditBox(this.font, rightColumnX, this.height - 110, fieldWidth - 60, 20, Component.literal("Player Name"));
+        int bottomY = this.height - 110;
+        int buttonHeight = 20;
+        int smallButtonWidth = 50;
+
+        addPlayerField = new EditBox(this.font, rightColumnX, bottomY, rightColumnWidth - smallButtonWidth - 5, 20, Component.literal("Player Name"));
         this.addRenderableWidget(addPlayerField);
 
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.add"),
                 (button) -> addPlayer())
-                .size(50, 20)
-                .pos(rightColumnX + fieldWidth - 55, this.height - 110)
+                .size(smallButtonWidth, buttonHeight)
+                .pos(rightColumnX + rightColumnWidth - smallButtonWidth, bottomY)
                 .build());
+
+        int btnRow2Y = bottomY + 25;
+        int btnCount = 4;
+        int btnSpacing = 5;
+        int totalBtnWidth = rightColumnWidth - (btnSpacing * (btnCount - 1));
+        int btnW = totalBtnWidth / btnCount;
 
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.remove"),
                 (button) -> removePlayer())
-                .size(70, 20)
-                .pos(rightColumnX, this.height - 80)
+                .size(btnW, buttonHeight)
+                .pos(rightColumnX, btnRow2Y)
                 .build());
 
         this.addRenderableWidget(Button.builder(
@@ -92,8 +105,8 @@ public class PlayerListEditScreen extends Screen {
                     playersWidget.updateOnlineStatus();
                     NoteListManager.save();
                 })
-                .size(80, 20)
-                .pos(rightColumnX + 80, this.height - 80)
+                .size(btnW, buttonHeight)
+                .pos(rightColumnX + btnW + btnSpacing, btnRow2Y)
                 .build());
 
         this.addRenderableWidget(Button.builder(
@@ -101,15 +114,28 @@ public class PlayerListEditScreen extends Screen {
                 (button) -> {
                     NoteListManager.moveNoteListUp(noteList);
                 })
-                .size(80, 20)
-                .pos(rightColumnX + 170, this.height - 80)
+                .size(btnW, buttonHeight)
+                .pos(rightColumnX + (btnW + btnSpacing) * 2, btnRow2Y)
                 .build());
+
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("playernotes.gui.button.move_down"),
+                (button) -> {
+                    NoteListManager.moveNoteListDown(noteList);
+                })
+                .size(btnW, buttonHeight)
+                .pos(rightColumnX + (btnW + btnSpacing) * 3, btnRow2Y)
+                .build());
+
+        int saveCancelY = this.height - 35;
+        int saveCancelWidth = 80;
+        int saveCancelSpacing = 10;
 
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.save"),
                 (button) -> saveAndClose())
-                .size(80, 20)
-                .pos(this.width / 2 - 90, this.height - 40)
+                .size(saveCancelWidth, buttonHeight)
+                .pos(this.width / 2 - saveCancelWidth - saveCancelSpacing / 2, saveCancelY)
                 .build());
 
         this.addRenderableWidget(Button.builder(
@@ -119,8 +145,8 @@ public class PlayerListEditScreen extends Screen {
                         this.minecraft.setScreen(parent);
                     }
                 })
-                .size(80, 20)
-                .pos(this.width / 2 + 10, this.height - 40)
+                .size(saveCancelWidth, buttonHeight)
+                .pos(this.width / 2 + saveCancelSpacing / 2, saveCancelY)
                 .build());
 
         playersWidget.updateOnlineStatus();
@@ -185,7 +211,7 @@ public class PlayerListEditScreen extends Screen {
         context.drawString(this.font, Component.translatable("playernotes.gui.label.players").getString() + ":", this.width / 2 + 10, 20, 0xAAAAAA);
 
         String preview = noteList.getFormattedPrefix() + "PlayerName";
-        context.drawString(this.font, Component.translatable("playernotes.gui.label.preview").getString() + ": " + preview, 10, 150, 0xFFFFFF);
+        context.drawString(this.font, Component.translatable("playernotes.gui.label.preview").getString() + ": " + preview, 10, 140, 0xFFFFFF);
 
         nameField.render(context, mouseX, mouseY, delta);
         prefixField.render(context, mouseX, mouseY, delta);
