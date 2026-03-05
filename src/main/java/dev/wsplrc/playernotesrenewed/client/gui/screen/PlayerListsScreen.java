@@ -24,6 +24,7 @@ public class PlayerListsScreen extends Screen {
 
         // List widget
         listWidget = new PlayerListsWidget(this.minecraft, this.width, this.height - 80, 30, 25, this);
+        listWidget.updateSizeAndPosition(this.width, this.height - 80, 30);
         this.addRenderableWidget(listWidget);
 
         int buttonWidth = 70;
