@@ -138,14 +138,14 @@ public class NoteList {
         StringBuilder result = new StringBuilder();
         int i = 0;
         while (i < text.length()) {
-            if (i + 7 <= text.length() && text.charAt(i) == '§' && text.charAt(i + 1) == '#') {
+            if (i + 8 <= text.length() && text.charAt(i) == '{' && text.charAt(i + 1) == '#' && text.charAt(i + 8) == '}') {
                 String hex = text.substring(i + 2, i + 8);
                 if (isValidHexColor(hex)) {
                     result.append("§x");
                     for (char c : hex.toCharArray()) {
-                        result.append("§").append(c);
+                        result.append("§").append(Character.toLowerCase(c));
                     }
-                    i += 8;
+                    i += 9;
                     continue;
                 }
             }
