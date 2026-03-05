@@ -19,19 +19,24 @@ import java.util.List;
 public class PlayerListsWidget extends ContainerObjectSelectionList<PlayerListsWidget.Entry> {
     private final PlayerListsScreen parent;
     private NoteList selectedList;
-    private final int entryWidth;
+    private final int listWidth;
 
     public PlayerListsWidget(Minecraft minecraft, int width, int height, int y, int itemHeight, PlayerListsScreen parent) {
         super(minecraft, width, height, y, itemHeight);
         this.parent = parent;
-        this.entryWidth = width - 20;
+        this.listWidth = width - 20;
         this.centerListVertically = false;
         updateList();
     }
 
     @Override
     public int getRowWidth() {
-        return entryWidth;
+        return listWidth;
+    }
+
+    @Override
+    protected int scrollBarX() {
+        return this.getX() + this.listWidth + 6;
     }
 
     public void updateList() {
