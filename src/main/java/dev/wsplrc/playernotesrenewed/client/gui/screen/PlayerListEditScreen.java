@@ -20,6 +20,10 @@ import java.util.UUID;
 public class PlayerListEditScreen extends Screen {
     private final Screen parent;
     private final NoteList noteList;
+    private final boolean isNewList;
+    private String currentName;
+    private String currentPrefix;
+    private boolean currentEnabled;
     private EditBox nameField;
     private EditBox prefixField;
     private Checkbox enabledCheckbox;
@@ -27,9 +31,17 @@ public class PlayerListEditScreen extends Screen {
     private EditBox addPlayerField;
 
     public PlayerListEditScreen(Screen parent, NoteList noteList) {
+        this(parent, noteList, false);
+    }
+
+    public PlayerListEditScreen(Screen parent, NoteList noteList, boolean isNewList) {
         super(Component.translatable("playernotes.gui.edit.title").append(" " + noteList.getName()));
         this.parent = parent;
         this.noteList = noteList;
+        this.isNewList = isNewList;
+        this.currentName = noteList.getName();
+        this.currentPrefix = noteList.getPrefix();
+        this.currentEnabled = noteList.isEnabled();
     }
 
     @Override
@@ -42,22 +54,23 @@ public class PlayerListEditScreen extends Screen {
         int rightColumnWidth = this.width / 2 - 30;
 
         nameField = new EditBox(this.font, leftColumnX, 30, leftColumnWidth, 20, Component.translatable("playernotes.gui.label.list_name"));
-        nameField.setValue(noteList.getName());
+        nameField.setValue(currentName);
         this.addRenderableWidget(nameField);
 
         prefixField = new EditBox(this.font, leftColumnX, 60, leftColumnWidth, 20, Component.translatable("playernotes.gui.label.prefix"));
-        prefixField.setValue(noteList.getPrefix());
+        prefixField.setValue(currentPrefix);
         this.addRenderableWidget(prefixField);
 
         enabledCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.enabled"), this.font)
                 .pos(leftColumnX, 90)
-                .selected(noteList.isEnabled())
+                .selected(currentEnabled)
                 .build();
         this.addRenderableWidget(enabledCheckbox);
 
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.prefix_format_help"),
                 (button) -> {
+                    saveCurrentState();
                     if (this.minecraft != null) {
                         this.minecraft.setScreen(new PrefixFormatHelpScreen(this));
                     }
@@ -141,6 +154,9 @@ public class PlayerListEditScreen extends Screen {
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.cancel"),
                 (button) -> {
+                    if (isNewList) {
+                        NoteListManager.removeNoteList(noteList);
+                    }
                     if (this.minecraft != null) {
                         this.minecraft.setScreen(parent);
                     }
@@ -150,6 +166,28 @@ public class PlayerListEditScreen extends Screen {
                 .build());
 
         playersWidget.updateOnlineStatus();
+    }
+
+    @Override
+    public void onClose() {
+        if (isNewList) {
+            NoteListManager.removeNoteList(noteList);
+        }
+        if (this.minecraft != null) {
+            this.minecraft.setScreen(parent);
+        }
+    }
+
+    private void saveCurrentState() {
+        if (nameField != null) {
+            currentName = nameField.getValue();
+        }
+        if (prefixField != null) {
+            currentPrefix = prefixField.getValue();
+        }
+        if (enabledCheckbox != null) {
+            currentEnabled = enabledCheckbox.selected();
+        }
     }
 
     private void addPlayer() {
@@ -193,6 +231,9 @@ public class PlayerListEditScreen extends Screen {
         noteList.setPrefix(prefixField.getValue());
         noteList.setEnabled(enabledCheckbox.selected());
 
+        if (isNewList && !NoteListManager.getNoteLists().contains(noteList)) {
+            NoteListManager.addNoteList(noteList);
+        }
         NoteListManager.save();
 
         if (this.minecraft != null) {
