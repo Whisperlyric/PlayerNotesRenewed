@@ -129,39 +129,6 @@ public class NoteList {
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
     public String getFormattedPrefix() {
-        String result = prefix.replace("&", "§");
-        result = convertRgbColors(result);
-        return result;
-    }
-
-    private String convertRgbColors(String text) {
-        StringBuilder result = new StringBuilder();
-        int i = 0;
-        while (i < text.length()) {
-            if (i + 8 <= text.length() && text.charAt(i) == '{' && text.charAt(i + 1) == '#' && text.charAt(i + 8) == '}') {
-                String hex = text.substring(i + 2, i + 8);
-                if (isValidHexColor(hex)) {
-                    result.append("§x");
-                    for (char c : hex.toCharArray()) {
-                        result.append("§").append(Character.toLowerCase(c));
-                    }
-                    i += 9;
-                    continue;
-                }
-            }
-            result.append(text.charAt(i));
-            i++;
-        }
-        return result.toString();
-    }
-
-    private boolean isValidHexColor(String hex) {
-        if (hex.length() != 6) return false;
-        for (char c : hex.toCharArray()) {
-            if (!Character.isDigit(c) && (c < 'a' || c > 'f') && (c < 'A' || c > 'F')) {
-                return false;
-            }
-        }
-        return true;
+        return prefix.replace("&", "§");
     }
 }
