@@ -37,9 +37,8 @@ public class PlayerListsScreen extends Screen {
                 (button) -> {
                     NoteList newList = new NoteList("New List");
                     newList.setPriority(NoteListManager.getNoteLists().size());
-                    NoteListManager.addNoteList(newList);
                     if (this.minecraft != null) {
-                        this.minecraft.setScreen(new PlayerListEditScreen(this, newList));
+                        this.minecraft.setScreen(new PlayerListEditScreen(this, newList, true));
                     }
                 })
                 .size(buttonWidth, 20)
