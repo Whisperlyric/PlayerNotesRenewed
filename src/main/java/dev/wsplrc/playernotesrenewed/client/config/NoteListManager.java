@@ -115,30 +115,43 @@ public class NoteListManager {
     public static void updateAllOnlineStatus() {
         Minecraft mc = Minecraft.getInstance();
         boolean isConnected = mc.getConnection() != null;
+        boolean changed = false;
         
         for (NoteList list : noteLists) {
             for (PlayerEntry player : list.getPlayers()) {
                 if (!isConnected) {
-                    player.setOnlineStatus(PlayerEntry.OnlineStatus.UNDEFINED);
+                    if (player.setOnlineStatus(PlayerEntry.OnlineStatus.UNDEFINED)) {
+                        changed = true;
+                    }
                 } else {
-                    updatePlayerOnlineStatus(player, mc);
+                    if (updatePlayerOnlineStatus(player, mc)) {
+                        changed = true;
+                    }
                 }
             }
         }
-        save();
+        if (changed) {
+            save();
+        }
     }
 
-    private static void updatePlayerOnlineStatus(PlayerEntry player, Minecraft mc) {
+    private static boolean updatePlayerOnlineStatus(PlayerEntry player, Minecraft mc) {
+        boolean changed = false;
         UUID uuid = player.getUUID();
         if (uuid != null) {
             PlayerInfo playerInfo = mc.getConnection().getPlayerInfo(uuid);
             if (playerInfo != null) {
-                player.setOnlineStatus(PlayerEntry.OnlineStatus.ONLINE);
+                if (player.setOnlineStatus(PlayerEntry.OnlineStatus.ONLINE)) {
+                    changed = true;
+                }
                 if (player.getName() == null || player.getName().isEmpty() || "Unknown".equals(player.getName())) {
                     player.setName(playerInfo.getProfile().name());
+                    changed = true;
                 }
             } else {
-                player.setOnlineStatus(PlayerEntry.OnlineStatus.OFFLINE);
+                if (player.setOnlineStatus(PlayerEntry.OnlineStatus.OFFLINE)) {
+                    changed = true;
+                }
             }
         } else {
             String name = player.getName();
@@ -146,19 +159,26 @@ public class NoteListManager {
                 boolean found = false;
                 for (PlayerInfo info : mc.getConnection().getOnlinePlayers()) {
                     if (info.getProfile().name().equalsIgnoreCase(name)) {
-                        player.setOnlineStatus(PlayerEntry.OnlineStatus.ONLINE);
+                        if (player.setOnlineStatus(PlayerEntry.OnlineStatus.ONLINE)) {
+                            changed = true;
+                        }
                         player.setUuid(info.getProfile().id().toString());
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    player.setOnlineStatus(PlayerEntry.OnlineStatus.OFFLINE);
+                    if (player.setOnlineStatus(PlayerEntry.OnlineStatus.OFFLINE)) {
+                        changed = true;
+                    }
                 }
             } else {
-                player.setOnlineStatus(PlayerEntry.OnlineStatus.OFFLINE);
+                if (player.setOnlineStatus(PlayerEntry.OnlineStatus.OFFLINE)) {
+                    changed = true;
+                }
             }
         }
+        return changed;
     }
 
     public static List<String> getPrefixesForPlayer(String uuid) {
@@ -193,6 +213,24 @@ public class NoteListManager {
     public static boolean playerHasPrefixByName(String name) {
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByName(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean listNameExists(String name) {
+        for (NoteList list : noteLists) {
+            if (list.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean listNameExistsExcluding(String name, NoteList exclude) {
+        for (NoteList list : noteLists) {
+            if (list != exclude && list.getName().equals(name)) {
                 return true;
             }
         }
