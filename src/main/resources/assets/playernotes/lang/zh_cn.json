@@ -9,6 +9,8 @@
   "playernotes.midnightconfig.tablist": "标签列表",
   "playernotes.midnightconfig.nameTag": "名称标签",
   "playernotes.midnightconfig.editNameTags": "是否显示前缀",
+  "playernotes.midnightconfig.autoUpdate": "自动更新",
+  "playernotes.midnightconfig.autoUpdateInterval": "玩家在线状态自动更新间隔（秒）",
   
   "playernotes.gui.title": "玩家备注列表",
   "playernotes.gui.edit.title": "编辑列表：",
@@ -34,10 +36,15 @@
   "playernotes.gui.help.format_intro": "使用 & 代替 \u00A7 作为格式化代码：",
   "playernotes.gui.help.colors": "颜色：",
   "playernotes.gui.help.styles": "样式：",
+  "playernotes.gui.help.rgb": "RGB颜色：",
+  "playernotes.gui.help.rgb_format": "格式：{#RRGGBB}（例如 {#FF5500} 表示橙色）",
+  "playernotes.gui.help.rgb_example": "示例：{#FF5500}&l[N] = 橙色粗体 [N]",
   "playernotes.gui.help.example": "示例：&2&l[N] = 深绿色粗体 [N]",
   "playernotes.gui.help.wiki": "更多内容请查询Minecraft Wiki关于格式化代码的页面",
   "key.playernotes.open_lists": "打开玩家列表",
   "playernotes.gui.message.player_not_found": "未找到玩家'%s'或其不在线。",
   "playernotes.gui.confirm.delete.title": "删除列表",
-  "playernotes.gui.confirm.delete.message": "确定要删除'%s'吗？此操作无法撤销。"
+  "playernotes.gui.confirm.delete.message": "确定要删除'%s'吗？此操作无法撤销。",
+  "playernotes.gui.message.list_name_exists": "已存在同名列表。",
+  "playernotes.gui.message.player_already_in_list": "该玩家已在此列表中。"
 }
