@@ -46,5 +46,6 @@
   "playernotes.gui.confirm.delete.title": "删除列表",
   "playernotes.gui.confirm.delete.message": "确定要删除'%s'吗？此操作无法撤销。",
   "playernotes.gui.message.list_name_exists": "已存在同名列表。",
-  "playernotes.gui.message.player_already_in_list": "该玩家已在此列表中。"
+  "playernotes.gui.message.player_already_in_list": "该玩家已在此列表中。",
+  "playernotes.gui.message.player_added": "玩家添加成功。"
 }
