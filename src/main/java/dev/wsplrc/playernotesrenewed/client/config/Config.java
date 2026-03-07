@@ -13,4 +13,6 @@ public class Config extends MidnightConfig {
     @Entry(category = GENERAL) public static boolean changeTabOrderOwn = false;
     @Comment(category = GENERAL, centered = true) public static Comment nameTag;
     @Entry(category = GENERAL) public static boolean editNameTags = true;
+    @Comment(category = GENERAL, centered = true) public static Comment autoUpdate;
+    @Entry(category = GENERAL, min = 1, max = 300) public static int autoUpdateInterval = 15;
 }
