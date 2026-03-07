@@ -227,7 +227,11 @@ public class PlayerListEditScreen extends Screen {
     }
 
     private void saveAndClose() {
-        noteList.setName(nameField.getValue());
+        String newName = nameField.getValue();
+        if (NoteListManager.listNameExistsExcluding(newName, noteList)) {
+            return;
+        }
+        noteList.setName(newName);
         noteList.setPrefix(prefixField.getValue());
         noteList.setEnabled(enabledCheckbox.selected());
 
