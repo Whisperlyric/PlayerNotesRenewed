@@ -12,6 +12,8 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.ChatFormatting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +31,7 @@ public class PlayerListEditScreen extends Screen {
     private Checkbox enabledCheckbox;
     private PlayerListPlayersWidget playersWidget;
     private EditBox addPlayerField;
-    private Component feedbackMessage;
-    private int feedbackColor;
+    private StringWidget feedbackWidget;
     private long feedbackTime;
 
     public PlayerListEditScreen(Screen parent, NoteList noteList) {
@@ -101,6 +102,9 @@ public class PlayerListEditScreen extends Screen {
                 .size(smallButtonWidth, buttonHeight)
                 .pos(rightColumnX + rightColumnWidth - smallButtonWidth, bottomY)
                 .build());
+
+        feedbackWidget = new StringWidget(rightColumnX, bottomY - 12, rightColumnWidth, 12, Component.empty(), this.font);
+        this.addRenderableOnly(feedbackWidget);
 
         int btnRow2Y = bottomY + 25;
         int btnCount = 4;
@@ -198,7 +202,7 @@ public class PlayerListEditScreen extends Screen {
         if (!playerName.isEmpty()) {
             PlayerEntry testEntry = new PlayerEntry(playerName, "");
             if (noteList.containsPlayer(testEntry)) {
-                showFeedback(Component.translatable("playernotes.gui.message.player_already_in_list"), 0xFF5555);
+                showFeedback(Component.translatable("playernotes.gui.message.player_already_in_list").withStyle(ChatFormatting.RED));
                 return;
             }
             UUID playerUUID = getPlayerUUID(playerName);
@@ -210,14 +214,15 @@ public class PlayerListEditScreen extends Screen {
             addPlayerField.setValue("");
             playersWidget.updateList();
             NoteListManager.save();
-            showFeedback(Component.translatable("playernotes.gui.message.player_added"), 0x55FF55);
+            showFeedback(Component.translatable("playernotes.gui.message.player_added").withStyle(ChatFormatting.GREEN));
         }
     }
 
-    private void showFeedback(Component message, int color) {
-        this.feedbackMessage = message;
-        this.feedbackColor = color;
-        this.feedbackTime = System.currentTimeMillis();
+    private void showFeedback(Component message) {
+        if (feedbackWidget != null) {
+            feedbackWidget.setMessage(message);
+            feedbackTime = System.currentTimeMillis();
+        }
     }
 
     private UUID getPlayerUUID(String playerName) {
@@ -244,7 +249,7 @@ public class PlayerListEditScreen extends Screen {
     private void saveAndClose() {
         String newName = nameField.getValue();
         if (NoteListManager.listNameExistsExcluding(newName, noteList)) {
-            showFeedback(Component.translatable("playernotes.gui.message.list_name_exists"), 0xFF5555);
+            showFeedback(Component.translatable("playernotes.gui.message.list_name_exists").withStyle(ChatFormatting.RED));
             return;
         }
         noteList.setName(newName);
@@ -274,16 +279,16 @@ public class PlayerListEditScreen extends Screen {
         String preview = noteList.getFormattedPrefix() + "PlayerName";
         context.drawString(this.font, Component.translatable("playernotes.gui.label.preview").getString() + ": " + preview, 10, 140, 0xFFFFFF);
 
+        if (feedbackWidget != null) {
+            if (System.currentTimeMillis() - feedbackTime > 3000) {
+                feedbackWidget.setMessage(Component.empty());
+            }
+        }
+
         nameField.render(context, mouseX, mouseY, delta);
         prefixField.render(context, mouseX, mouseY, delta);
         addPlayerField.render(context, mouseX, mouseY, delta);
         playersWidget.render(context, mouseX, mouseY, delta);
-
-        if (feedbackMessage != null && System.currentTimeMillis() - feedbackTime < 3000) {
-            int rightColumnX = this.width / 2 + 10;
-            int feedbackY = this.height - 145;
-            context.drawString(this.font, feedbackMessage, rightColumnX, feedbackY, feedbackColor);
-        }
     }
 
     public static class PrefixFormatHelpScreen extends Screen {
