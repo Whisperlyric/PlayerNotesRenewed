@@ -29,6 +29,9 @@ public class PlayerListEditScreen extends Screen {
     private Checkbox enabledCheckbox;
     private PlayerListPlayersWidget playersWidget;
     private EditBox addPlayerField;
+    private Component feedbackMessage;
+    private int feedbackColor;
+    private long feedbackTime;
 
     public PlayerListEditScreen(Screen parent, NoteList noteList) {
         this(parent, noteList, false);
@@ -193,6 +196,11 @@ public class PlayerListEditScreen extends Screen {
     private void addPlayer() {
         String playerName = addPlayerField.getValue().trim();
         if (!playerName.isEmpty()) {
+            PlayerEntry testEntry = new PlayerEntry(playerName, "");
+            if (noteList.containsPlayer(testEntry)) {
+                showFeedback(Component.translatable("playernotes.gui.message.player_already_in_list"), 0xFF5555);
+                return;
+            }
             UUID playerUUID = getPlayerUUID(playerName);
             if (playerUUID != null) {
                 noteList.addPlayer(playerName, playerUUID);
@@ -202,7 +210,14 @@ public class PlayerListEditScreen extends Screen {
             addPlayerField.setValue("");
             playersWidget.updateList();
             NoteListManager.save();
+            showFeedback(Component.translatable("playernotes.gui.message.player_added"), 0x55FF55);
         }
+    }
+
+    private void showFeedback(Component message, int color) {
+        this.feedbackMessage = message;
+        this.feedbackColor = color;
+        this.feedbackTime = System.currentTimeMillis();
     }
 
     private UUID getPlayerUUID(String playerName) {
@@ -229,6 +244,7 @@ public class PlayerListEditScreen extends Screen {
     private void saveAndClose() {
         String newName = nameField.getValue();
         if (NoteListManager.listNameExistsExcluding(newName, noteList)) {
+            showFeedback(Component.translatable("playernotes.gui.message.list_name_exists"), 0xFF5555);
             return;
         }
         noteList.setName(newName);
@@ -257,6 +273,11 @@ public class PlayerListEditScreen extends Screen {
 
         String preview = noteList.getFormattedPrefix() + "PlayerName";
         context.drawString(this.font, Component.translatable("playernotes.gui.label.preview").getString() + ": " + preview, 10, 140, 0xFFFFFF);
+
+        if (feedbackMessage != null && System.currentTimeMillis() - feedbackTime < 3000) {
+            int rightColumnX = this.width / 2 + 10;
+            context.drawString(this.font, feedbackMessage, rightColumnX, this.height - 125, feedbackColor);
+        }
 
         nameField.render(context, mouseX, mouseY, delta);
         prefixField.render(context, mouseX, mouseY, delta);
