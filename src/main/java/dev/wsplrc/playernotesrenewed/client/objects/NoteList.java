@@ -89,7 +89,18 @@ public class NoteList {
     }
 
     public boolean containsPlayer(PlayerEntry player) {
-        return players != null && players.contains(player);
+        if (players == null || player == null) return false;
+        String uuid = player.getUuid();
+        String name = player.getName();
+        for (PlayerEntry entry : players) {
+            if (uuid != null && !uuid.isEmpty() && uuid.equals(entry.getUuid())) {
+                return true;
+            }
+            if (name != null && !name.isEmpty() && name.equalsIgnoreCase(entry.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean containsPlayerByUUID(String uuid) {
