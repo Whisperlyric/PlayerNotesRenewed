@@ -52,8 +52,12 @@ public class PlayerEntry {
     public OnlineStatus getOnlineStatus() { 
         return onlineStatus != null ? onlineStatus : OnlineStatus.UNDEFINED; 
     }
-    public void setOnlineStatus(OnlineStatus onlineStatus) { 
-        this.onlineStatus = onlineStatus; 
+    public boolean setOnlineStatus(OnlineStatus onlineStatus) { 
+        if (this.onlineStatus != onlineStatus) {
+            this.onlineStatus = onlineStatus;
+            return true;
+        }
+        return false;
     }
 
     public String getStatusDisplayText() {
