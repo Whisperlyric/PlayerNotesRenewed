@@ -274,15 +274,16 @@ public class PlayerListEditScreen extends Screen {
         String preview = noteList.getFormattedPrefix() + "PlayerName";
         context.drawString(this.font, Component.translatable("playernotes.gui.label.preview").getString() + ": " + preview, 10, 140, 0xFFFFFF);
 
-        if (feedbackMessage != null && System.currentTimeMillis() - feedbackTime < 3000) {
-            int rightColumnX = this.width / 2 + 10;
-            context.drawString(this.font, feedbackMessage, rightColumnX, this.height - 125, feedbackColor);
-        }
-
         nameField.render(context, mouseX, mouseY, delta);
         prefixField.render(context, mouseX, mouseY, delta);
         addPlayerField.render(context, mouseX, mouseY, delta);
         playersWidget.render(context, mouseX, mouseY, delta);
+
+        if (feedbackMessage != null && System.currentTimeMillis() - feedbackTime < 3000) {
+            int rightColumnX = this.width / 2 + 10;
+            int feedbackY = this.height - 145;
+            context.drawString(this.font, feedbackMessage, rightColumnX, feedbackY, feedbackColor);
+        }
     }
 
     public static class PrefixFormatHelpScreen extends Screen {
