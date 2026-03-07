@@ -46,5 +46,6 @@
   "playernotes.gui.confirm.delete.title": "Delete List",
   "playernotes.gui.confirm.delete.message": "Are you sure you want to delete '%s'? This cannot be undone.",
   "playernotes.gui.message.list_name_exists": "A list with this name already exists.",
-  "playernotes.gui.message.player_already_in_list": "Player is already in this list."
+  "playernotes.gui.message.player_already_in_list": "Player is already in this list.",
+  "playernotes.gui.message.player_added": "Player added successfully."
 }
