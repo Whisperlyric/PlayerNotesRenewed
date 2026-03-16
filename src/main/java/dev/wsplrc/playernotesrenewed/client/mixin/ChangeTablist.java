@@ -49,7 +49,9 @@ public abstract class ChangeTablist {
                 if (!prefixes.isEmpty()) {
                     result.append(Component.literal(prefixes));
                 }
-                result.append(Component.literal("§r"));
+                if (!Config.styleAffectPlayerName) {
+                    result.append(Component.literal("§r"));
+                }
                 result.append(cir.getReturnValue());
                 if (!suffixes.isEmpty()) {
                     result.append(Component.literal(suffixes));

@@ -121,5 +121,7 @@ runs/
 # 忽略临时目录
 src1/
 src2/
+src3/
+src4/
 bin/
 .vscode/

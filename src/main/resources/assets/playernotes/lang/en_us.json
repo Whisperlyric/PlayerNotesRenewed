@@ -9,6 +9,11 @@
   "playernotes.midnightconfig.tablist": "Tablist",
   "playernotes.midnightconfig.nameTag": "Name Tags",
   "playernotes.midnightconfig.editNameTags": "Display prefix in front of player name tag, if the player has notes?",
+  "playernotes.midnightconfig.chat": "Chat",
+  "playernotes.midnightconfig.showPrefixInChat": "Show prefix in chat",
+  "playernotes.midnightconfig.showSuffixInChat": "Show suffix in chat",
+  "playernotes.midnightconfig.style": "Style",
+  "playernotes.midnightconfig.styleAffectPlayerName": "Prefix/Suffix style affects player name",
   "playernotes.midnightconfig.autoUpdate": "Auto Update",
   "playernotes.midnightconfig.autoUpdateInterval": "Auto update interval for player online status (seconds)",
   

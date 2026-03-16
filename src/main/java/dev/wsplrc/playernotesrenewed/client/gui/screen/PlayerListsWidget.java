@@ -73,6 +73,7 @@ public class PlayerListsWidget extends ContainerObjectSelectionList<PlayerListsW
         private final PlayerListsWidget parent;
         private final StringWidget nameWidget;
         private final StringWidget prefixWidget;
+        private final StringWidget suffixWidget;
         private final StringWidget countWidget;
         private final Checkbox enabledCheckbox;
 
@@ -84,7 +85,7 @@ public class PlayerListsWidget extends ContainerObjectSelectionList<PlayerListsW
             if (name == null || name.isEmpty()) {
                 name = "Unnamed List";
             }
-            this.nameWidget = new StringWidget(0, 0, 100, 20, Component.literal(name), Minecraft.getInstance().font);
+            this.nameWidget = new StringWidget(0, 0, 80, 20, Component.literal(name), Minecraft.getInstance().font);
             elements.add(nameWidget);
 
             this.enabledCheckbox = Checkbox.builder(Component.empty(), Minecraft.getInstance().font)
@@ -98,8 +99,12 @@ public class PlayerListsWidget extends ContainerObjectSelectionList<PlayerListsW
             elements.add(enabledCheckbox);
 
             String prefix = noteList.getFormattedPrefix();
-            this.prefixWidget = new StringWidget(0, 0, 150, 20, Component.literal("Prefix: " + prefix), Minecraft.getInstance().font);
+            this.prefixWidget = new StringWidget(0, 0, 100, 20, Component.literal("P: " + prefix), Minecraft.getInstance().font);
             elements.add(prefixWidget);
+
+            String suffix = noteList.getFormattedSuffix();
+            this.suffixWidget = new StringWidget(0, 0, 100, 20, Component.literal("S: " + suffix), Minecraft.getInstance().font);
+            elements.add(suffixWidget);
 
             int playerCount = noteList.getPlayers().size();
             String countText = playerCount + " player" + (playerCount != 1 ? "s" : "");
@@ -127,13 +132,17 @@ public class PlayerListsWidget extends ContainerObjectSelectionList<PlayerListsW
             nameWidget.setY(centerY);
             nameWidget.render(guiGraphics, mouseX, mouseY, tickDelta);
             
-            enabledCheckbox.setX(x + 120);
+            enabledCheckbox.setX(x + 95);
             enabledCheckbox.setY(centerY - 2);
             enabledCheckbox.render(guiGraphics, mouseX, mouseY, tickDelta);
             
-            prefixWidget.setX(x + 145);
+            prefixWidget.setX(x + 115);
             prefixWidget.setY(centerY);
             prefixWidget.render(guiGraphics, mouseX, mouseY, tickDelta);
+            
+            suffixWidget.setX(x + 220);
+            suffixWidget.setY(centerY);
+            suffixWidget.render(guiGraphics, mouseX, mouseY, tickDelta);
             
             countWidget.setX(x + width - 70);
             countWidget.setY(centerY);
