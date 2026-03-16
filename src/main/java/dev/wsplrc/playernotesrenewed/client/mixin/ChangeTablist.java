@@ -14,9 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Mixin(value = PlayerTabOverlay.class, priority = 1001)
 public abstract class ChangeTablist {
+
+    private static final Pattern SERVER_PREFIX_PATTERN = Pattern.compile("^(\\[[^\\]]+\\]\\s*)");
+    private static final Pattern PLAYER_NAME_PATTERN = Pattern.compile("^(\\w+)$");
 
     @Inject(method = "getPlayerInfos", at= @At("RETURN"), cancellable = true)
     public void changeOrder(CallbackInfoReturnable<List<PlayerInfo>> cir){
@@ -45,19 +50,49 @@ public abstract class ChangeTablist {
             String suffixes = Utils.getPlayerSuffixesByProfile(playerInfo.getProfile());
             
             if (!prefixes.isEmpty() || !suffixes.isEmpty()) {
-                MutableComponent result = Component.literal("");
-                if (!prefixes.isEmpty()) {
-                    result.append(Component.literal(prefixes));
+                Component original = cir.getReturnValue();
+                String originalText = original.getString();
+                String playerName = playerInfo.getProfile().name();
+                
+                Matcher serverMatcher = SERVER_PREFIX_PATTERN.matcher(originalText);
+                String serverPrefix = "";
+                String textAfterServer = originalText;
+                
+                if (serverMatcher.find()) {
+                    serverPrefix = serverMatcher.group(1);
+                    textAfterServer = originalText.substring(serverPrefix.length());
                 }
-                if (!Config.styleAffectPlayerName) {
-                    result.append(Component.literal("§r"));
+                
+                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixes, suffixes);
+                
+                String newText;
+                if (!serverPrefix.isEmpty()) {
+                    newText = serverPrefix + textAfterServer.replace(playerName, decoratedPlayerName);
+                } else {
+                    newText = originalText.replace(playerName, decoratedPlayerName);
                 }
-                result.append(cir.getReturnValue());
-                if (!suffixes.isEmpty()) {
-                    result.append(Component.literal(suffixes));
-                }
-                cir.setReturnValue(result);
+                
+                cir.setReturnValue(Component.literal(newText));
             }
         }
+    }
+    
+    private String buildDecoratedPlayerName(String playerName, String prefixes, String suffixes) {
+        StringBuilder sb = new StringBuilder();
+        
+        if (!prefixes.isEmpty()) {
+            sb.append(prefixes);
+            if (!Config.styleAffectPlayerName) {
+                sb.append("§r");
+            }
+        }
+        
+        sb.append(playerName);
+        
+        if (!suffixes.isEmpty()) {
+            sb.append(suffixes);
+        }
+        
+        return sb.toString();
     }
 }

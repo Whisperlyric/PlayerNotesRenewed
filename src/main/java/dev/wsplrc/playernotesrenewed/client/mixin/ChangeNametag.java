@@ -4,7 +4,6 @@ import dev.wsplrc.playernotesrenewed.client.config.Config;
 import dev.wsplrc.playernotesrenewed.client.utils.Utils;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,19 +24,33 @@ public class ChangeNametag {
             String suffixes = Utils.getPlayerSuffixesByProfile(p.getGameProfile());
             
             if (!prefixes.isEmpty() || !suffixes.isEmpty()) {
-                MutableComponent result = Component.literal("");
-                if (!prefixes.isEmpty()) {
-                    result.append(Component.literal(prefixes));
-                }
-                if (!Config.styleAffectPlayerName) {
-                    result.append(Component.literal("§r"));
-                }
-                result.append(cir.getReturnValue());
-                if (!suffixes.isEmpty()) {
-                    result.append(Component.literal(suffixes));
-                }
-                cir.setReturnValue(result);
+                String playerName = p.getGameProfile().name();
+                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixes, suffixes);
+                
+                String originalText = cir.getReturnValue().getString();
+                String newText = originalText.replace(playerName, decoratedPlayerName);
+                
+                cir.setReturnValue(Component.literal(newText));
             }
         }
+    }
+    
+    private String buildDecoratedPlayerName(String playerName, String prefixes, String suffixes) {
+        StringBuilder sb = new StringBuilder();
+        
+        if (!prefixes.isEmpty()) {
+            sb.append(prefixes);
+            if (!Config.styleAffectPlayerName) {
+                sb.append("§r");
+            }
+        }
+        
+        sb.append(playerName);
+        
+        if (!suffixes.isEmpty()) {
+            sb.append(suffixes);
+        }
+        
+        return sb.toString();
     }
 }
