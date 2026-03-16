@@ -42,9 +42,19 @@ public abstract class ChangeTablist {
 
         if (Utils.playerHasPrefixByProfile(playerInfo.getProfile())) {
             String prefixes = Utils.getPlayerPrefixesByProfile(playerInfo.getProfile());
-            if (!prefixes.isEmpty()) {
-                MutableComponent prefix = Component.literal(prefixes + "§r ");
-                cir.setReturnValue(prefix.append(cir.getReturnValue()));
+            String suffixes = Utils.getPlayerSuffixesByProfile(playerInfo.getProfile());
+            
+            if (!prefixes.isEmpty() || !suffixes.isEmpty()) {
+                MutableComponent result = Component.literal("");
+                if (!prefixes.isEmpty()) {
+                    result.append(Component.literal(prefixes));
+                }
+                result.append(Component.literal("§r"));
+                result.append(cir.getReturnValue());
+                if (!suffixes.isEmpty()) {
+                    result.append(Component.literal(suffixes));
+                }
+                cir.setReturnValue(result);
             }
         }
     }
