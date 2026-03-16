@@ -25,10 +25,24 @@ public class PlayerListEditScreen extends Screen {
     private final boolean isNewList;
     private String currentName;
     private String currentPrefix;
+    private String currentSuffix;
     private boolean currentEnabled;
+    private boolean currentPrefixEnabled;
+    private boolean currentSuffixEnabled;
+    private boolean currentPrefixAppendReset;
+    private boolean currentSuffixAppendReset;
+    private int currentPrefixPriority;
+    private int currentSuffixPriority;
     private EditBox nameField;
     private EditBox prefixField;
+    private EditBox suffixField;
+    private EditBox prefixPriorityField;
+    private EditBox suffixPriorityField;
     private Checkbox enabledCheckbox;
+    private Checkbox prefixEnabledCheckbox;
+    private Checkbox suffixEnabledCheckbox;
+    private Checkbox prefixResetCheckbox;
+    private Checkbox suffixResetCheckbox;
     private PlayerListPlayersWidget playersWidget;
     private EditBox addPlayerField;
     private StringWidget feedbackWidget;
@@ -45,7 +59,14 @@ public class PlayerListEditScreen extends Screen {
         this.isNewList = isNewList;
         this.currentName = noteList.getName();
         this.currentPrefix = noteList.getPrefix();
+        this.currentSuffix = noteList.getSuffix();
         this.currentEnabled = noteList.isEnabled();
+        this.currentPrefixEnabled = noteList.isPrefixEnabled();
+        this.currentSuffixEnabled = noteList.isSuffixEnabled();
+        this.currentPrefixAppendReset = noteList.isPrefixAppendReset();
+        this.currentSuffixAppendReset = noteList.isSuffixAppendReset();
+        this.currentPrefixPriority = noteList.getPrefixPriority();
+        this.currentSuffixPriority = noteList.getSuffixPriority();
     }
 
     @Override
@@ -57,19 +78,66 @@ public class PlayerListEditScreen extends Screen {
         int rightColumnX = this.width / 2 + 10;
         int rightColumnWidth = this.width / 2 - 30;
 
-        nameField = new EditBox(this.font, leftColumnX, 30, leftColumnWidth, 20, Component.translatable("playernotes.gui.label.list_name"));
+        int yPos = 20;
+
+        nameField = new EditBox(this.font, leftColumnX, yPos, leftColumnWidth, 18, Component.translatable("playernotes.gui.label.list_name"));
         nameField.setValue(currentName);
         this.addRenderableWidget(nameField);
+        yPos += 22;
 
-        prefixField = new EditBox(this.font, leftColumnX, 60, leftColumnWidth, 20, Component.translatable("playernotes.gui.label.prefix"));
+        prefixField = new EditBox(this.font, leftColumnX, yPos, leftColumnWidth - 22, 18, Component.translatable("playernotes.gui.label.prefix"));
         prefixField.setValue(currentPrefix);
         this.addRenderableWidget(prefixField);
 
+        prefixEnabledCheckbox = Checkbox.builder(Component.empty(), this.font)
+                .pos(leftColumnX + leftColumnWidth - 20, yPos)
+                .selected(currentPrefixEnabled)
+                .build();
+        this.addRenderableWidget(prefixEnabledCheckbox);
+        yPos += 22;
+
+        suffixField = new EditBox(this.font, leftColumnX, yPos, leftColumnWidth - 22, 18, Component.translatable("playernotes.gui.label.suffix"));
+        suffixField.setValue(currentSuffix);
+        this.addRenderableWidget(suffixField);
+
+        suffixEnabledCheckbox = Checkbox.builder(Component.empty(), this.font)
+                .pos(leftColumnX + leftColumnWidth - 20, yPos)
+                .selected(currentSuffixEnabled)
+                .build();
+        this.addRenderableWidget(suffixEnabledCheckbox);
+        yPos += 22;
+
+        prefixResetCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.prefix_reset"), this.font)
+                .pos(leftColumnX, yPos)
+                .selected(currentPrefixAppendReset)
+                .build();
+        this.addRenderableWidget(prefixResetCheckbox);
+        yPos += 20;
+
+        suffixResetCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.suffix_reset"), this.font)
+                .pos(leftColumnX, yPos)
+                .selected(currentSuffixAppendReset)
+                .build();
+        this.addRenderableWidget(suffixResetCheckbox);
+        yPos += 22;
+
+        prefixPriorityField = new EditBox(this.font, leftColumnX, yPos, 40, 18, Component.translatable("playernotes.gui.label.prefix_priority"));
+        prefixPriorityField.setValue(String.valueOf(currentPrefixPriority));
+        prefixPriorityField.setFilter(s -> s.matches("-?\\d*"));
+        this.addRenderableWidget(prefixPriorityField);
+
+        suffixPriorityField = new EditBox(this.font, leftColumnX + 80, yPos, 40, 18, Component.translatable("playernotes.gui.label.suffix_priority"));
+        suffixPriorityField.setValue(String.valueOf(currentSuffixPriority));
+        suffixPriorityField.setFilter(s -> s.matches("-?\\d*"));
+        this.addRenderableWidget(suffixPriorityField);
+        yPos += 22;
+
         enabledCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.enabled"), this.font)
-                .pos(leftColumnX, 90)
+                .pos(leftColumnX, yPos)
                 .selected(currentEnabled)
                 .build();
         this.addRenderableWidget(enabledCheckbox);
+        yPos += 22;
 
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.prefix_format_help"),
@@ -79,13 +147,13 @@ public class PlayerListEditScreen extends Screen {
                         this.minecraft.setScreen(new PrefixFormatHelpScreen(this));
                     }
                 })
-                .size(Math.min(120, leftColumnWidth), 20)
-                .pos(leftColumnX, 115)
+                .size(Math.min(120, leftColumnWidth), 18)
+                .pos(leftColumnX, yPos)
                 .build());
 
-        int listHeight = this.height - 180;
-        playersWidget = new PlayerListPlayersWidget(this.minecraft, rightColumnWidth, listHeight, 30, 25, noteList);
-        playersWidget.updateSizeAndPosition(rightColumnWidth, listHeight, 30);
+        int listHeight = this.height - 160;
+        playersWidget = new PlayerListPlayersWidget(this.minecraft, rightColumnWidth, listHeight, 20, 25, noteList);
+        playersWidget.updateSizeAndPosition(rightColumnWidth, listHeight, 20);
         playersWidget.setX(rightColumnX);
         this.addRenderableWidget(playersWidget);
 
@@ -192,8 +260,37 @@ public class PlayerListEditScreen extends Screen {
         if (prefixField != null) {
             currentPrefix = prefixField.getValue();
         }
+        if (suffixField != null) {
+            currentSuffix = suffixField.getValue();
+        }
         if (enabledCheckbox != null) {
             currentEnabled = enabledCheckbox.selected();
+        }
+        if (prefixEnabledCheckbox != null) {
+            currentPrefixEnabled = prefixEnabledCheckbox.selected();
+        }
+        if (suffixEnabledCheckbox != null) {
+            currentSuffixEnabled = suffixEnabledCheckbox.selected();
+        }
+        if (prefixResetCheckbox != null) {
+            currentPrefixAppendReset = prefixResetCheckbox.selected();
+        }
+        if (suffixResetCheckbox != null) {
+            currentSuffixAppendReset = suffixResetCheckbox.selected();
+        }
+        if (prefixPriorityField != null) {
+            try {
+                currentPrefixPriority = Integer.parseInt(prefixPriorityField.getValue());
+            } catch (NumberFormatException e) {
+                currentPrefixPriority = 0;
+            }
+        }
+        if (suffixPriorityField != null) {
+            try {
+                currentSuffixPriority = Integer.parseInt(suffixPriorityField.getValue());
+            } catch (NumberFormatException e) {
+                currentSuffixPriority = 0;
+            }
         }
     }
 
@@ -254,7 +351,22 @@ public class PlayerListEditScreen extends Screen {
         }
         noteList.setName(newName);
         noteList.setPrefix(prefixField.getValue());
+        noteList.setSuffix(suffixField.getValue());
         noteList.setEnabled(enabledCheckbox.selected());
+        noteList.setPrefixEnabled(prefixEnabledCheckbox.selected());
+        noteList.setSuffixEnabled(suffixEnabledCheckbox.selected());
+        noteList.setPrefixAppendReset(prefixResetCheckbox.selected());
+        noteList.setSuffixAppendReset(suffixResetCheckbox.selected());
+        try {
+            noteList.setPrefixPriority(Integer.parseInt(prefixPriorityField.getValue()));
+        } catch (NumberFormatException e) {
+            noteList.setPrefixPriority(0);
+        }
+        try {
+            noteList.setSuffixPriority(Integer.parseInt(suffixPriorityField.getValue()));
+        } catch (NumberFormatException e) {
+            noteList.setSuffixPriority(0);
+        }
 
         if (isNewList && !NoteListManager.getNoteLists().contains(noteList)) {
             NoteListManager.addNoteList(noteList);
@@ -272,12 +384,18 @@ public class PlayerListEditScreen extends Screen {
         
         context.drawCenteredString(this.font, this.title, this.width / 2, 10, 0xFFFFFF);
 
-        context.drawString(this.font, Component.translatable("playernotes.gui.label.list_name").getString() + ":", 10, 20, 0xAAAAAA);
-        context.drawString(this.font, Component.translatable("playernotes.gui.label.prefix").getString() + ":", 10, 50, 0xAAAAAA);
-        context.drawString(this.font, Component.translatable("playernotes.gui.label.players").getString() + ":", this.width / 2 + 10, 20, 0xAAAAAA);
+        int rightColumnX = this.width / 2 + 10;
+        context.drawString(this.font, Component.translatable("playernotes.gui.label.players").getString() + ":", rightColumnX, 10, 0xAAAAAA);
 
-        String preview = noteList.getFormattedPrefix() + "PlayerName";
-        context.drawString(this.font, Component.translatable("playernotes.gui.label.preview").getString() + ": " + preview, 10, 140, 0xFFFFFF);
+        StringBuilder preview = new StringBuilder();
+        if (prefixEnabledCheckbox.selected()) {
+            preview.append(noteList.getFormattedPrefix());
+        }
+        preview.append("PlayerName");
+        if (suffixEnabledCheckbox.selected()) {
+            preview.append(" ").append(noteList.getFormattedSuffix());
+        }
+        context.drawString(this.font, Component.translatable("playernotes.gui.label.preview").getString() + ": " + preview, 10, this.height - 50, 0xFFFFFF);
 
         if (feedbackWidget != null) {
             if (System.currentTimeMillis() - feedbackTime > 3000) {
@@ -287,6 +405,7 @@ public class PlayerListEditScreen extends Screen {
 
         nameField.render(context, mouseX, mouseY, delta);
         prefixField.render(context, mouseX, mouseY, delta);
+        suffixField.render(context, mouseX, mouseY, delta);
         addPlayerField.render(context, mouseX, mouseY, delta);
         playersWidget.render(context, mouseX, mouseY, delta);
     }
