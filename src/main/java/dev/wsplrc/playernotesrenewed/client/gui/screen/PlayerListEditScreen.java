@@ -121,6 +121,11 @@ public class PlayerListEditScreen extends Screen {
         this.addRenderableWidget(suffixResetCheckbox);
         yPos += 22;
 
+        StringWidget priorityHint = new StringWidget(leftColumnX, yPos, leftColumnWidth, 12, 
+            Component.translatable("playernotes.gui.label.priority_hint"), this.font);
+        this.addRenderableOnly(priorityHint);
+        yPos += 14;
+
         prefixPriorityField = new EditBox(this.font, leftColumnX, yPos, 40, 18, Component.translatable("playernotes.gui.label.prefix_priority"));
         prefixPriorityField.setValue(String.valueOf(currentPrefixPriority));
         prefixPriorityField.setFilter(s -> s.matches("-?\\d*"));
@@ -490,6 +495,30 @@ public class PlayerListEditScreen extends Screen {
                 Component.translatable("playernotes.gui.help.wiki"), this.font);
             textWidgets.add(wikiWidget);
             this.addRenderableOnly(wikiWidget);
+            y += lineHeight + 10;
+
+            StringWidget featuresLabel = new StringWidget(x, y, 200, 12, 
+                Component.translatable("playernotes.gui.help.features"), this.font);
+            textWidgets.add(featuresLabel);
+            this.addRenderableOnly(featuresLabel);
+            y += lineHeight;
+
+            StringWidget suffixWidget = new StringWidget(x + 10, y, 300, 12, 
+                Component.translatable("playernotes.gui.help.suffix"), this.font);
+            textWidgets.add(suffixWidget);
+            this.addRenderableOnly(suffixWidget);
+            y += lineHeight;
+
+            StringWidget priorityWidget = new StringWidget(x + 10, y, 300, 12, 
+                Component.translatable("playernotes.gui.help.priority"), this.font);
+            textWidgets.add(priorityWidget);
+            this.addRenderableOnly(priorityWidget);
+            y += lineHeight;
+
+            StringWidget resetWidget = new StringWidget(x + 10, y, 300, 12, 
+                Component.translatable("playernotes.gui.help.reset_code"), this.font);
+            textWidgets.add(resetWidget);
+            this.addRenderableOnly(resetWidget);
 
             this.addRenderableWidget(Button.builder(
                     Component.translatable("playernotes.gui.button.done"),
