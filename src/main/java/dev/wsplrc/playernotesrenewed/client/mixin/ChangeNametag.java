@@ -22,9 +22,19 @@ public class ChangeNametag {
 
         if (Utils.playerHasPrefixByProfile(p.getGameProfile())) {
             String prefixes = Utils.getPlayerPrefixesByProfile(p.getGameProfile());
-            if (!prefixes.isEmpty()) {
-                MutableComponent prefix = Component.literal(prefixes + "§r");
-                cir.setReturnValue(prefix.append(cir.getReturnValue()));
+            String suffixes = Utils.getPlayerSuffixesByProfile(p.getGameProfile());
+            
+            if (!prefixes.isEmpty() || !suffixes.isEmpty()) {
+                MutableComponent result = Component.literal("");
+                if (!prefixes.isEmpty()) {
+                    result.append(Component.literal(prefixes));
+                }
+                result.append(Component.literal("§r"));
+                result.append(cir.getReturnValue());
+                if (!suffixes.isEmpty()) {
+                    result.append(Component.literal(suffixes));
+                }
+                cir.setReturnValue(result);
             }
         }
     }
