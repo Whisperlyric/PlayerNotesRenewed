@@ -35,13 +35,39 @@ public class Utils {
         return buildPrefixString(prefixes);
     }
 
+    public static String getPlayerSuffixes(String uuid) {
+        String normalizedUuid = normalizeUuid(uuid);
+        List<String> suffixes = NoteListManager.getSuffixesForPlayer(normalizedUuid);
+        return buildSuffixString(suffixes);
+    }
+
+    public static String getPlayerSuffixesByProfile(GameProfile profile) {
+        String uuid = profile.id().toString();
+        List<String> suffixes = NoteListManager.getSuffixesForPlayer(uuid);
+        if (suffixes.isEmpty()) {
+            suffixes = NoteListManager.getSuffixesForPlayerByName(profile.name());
+        }
+        return buildSuffixString(suffixes);
+    }
+
     private static String buildPrefixString(List<String> prefixes) {
         if (prefixes == null || prefixes.isEmpty()) {
             return "";
         }
         StringBuilder result = new StringBuilder();
         for (String prefix : prefixes) {
-            result.append("§r").append(prefix).append(" ");
+            result.append(prefix).append(" ");
+        }
+        return result.toString();
+    }
+
+    private static String buildSuffixString(List<String> suffixes) {
+        if (suffixes == null || suffixes.isEmpty()) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        for (String suffix : suffixes) {
+            result.append(" ").append(suffix);
         }
         return result.toString();
     }
