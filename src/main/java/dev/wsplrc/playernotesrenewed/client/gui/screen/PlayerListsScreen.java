@@ -5,6 +5,7 @@ import dev.wsplrc.playernotesrenewed.client.objects.NoteList;
 import eu.midnightdust.lib.config.MidnightConfig;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -22,16 +23,16 @@ public class PlayerListsScreen extends Screen {
     protected void init() {
         super.init();
 
-        // List widget
         listWidget = new PlayerListsWidget(this.minecraft, this.width, this.height - 80, 30, 25, this);
         listWidget.updateSizeAndPosition(this.width, this.height - 80, 30);
         this.addRenderableWidget(listWidget);
 
-        int buttonWidth = 70;
-        int startX = this.width / 2 - (buttonWidth * 5 + 40) / 2;
+        int buttonWidth = 60;
+        int btnCount = 6;
+        int totalWidth = buttonWidth * btnCount + 10 * (btnCount - 1);
+        int startX = (this.width - totalWidth) / 2;
         int buttonY = this.height - 40;
 
-        // Add List button
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.add_list"),
                 (button) -> {
@@ -45,7 +46,6 @@ public class PlayerListsScreen extends Screen {
                 .pos(startX, buttonY)
                 .build());
 
-        // Edit button
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.edit"),
                 (button) -> {
@@ -58,7 +58,18 @@ public class PlayerListsScreen extends Screen {
                 .pos(startX + buttonWidth + 10, buttonY)
                 .build());
 
-        // Delete button with confirmation
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("playernotes.gui.button.copy"),
+                (button) -> {
+                    NoteList selected = listWidget.getSelectedList();
+                    if (selected != null && this.minecraft != null) {
+                        this.minecraft.setScreen(new CopyListScreen(this, selected));
+                    }
+                })
+                .size(buttonWidth, 20)
+                .pos(startX + (buttonWidth + 10) * 2, buttonY)
+                .build());
+
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.delete"),
                 (button) -> {
@@ -78,10 +89,9 @@ public class PlayerListsScreen extends Screen {
                     }
                 })
                 .size(buttonWidth, 20)
-                .pos(startX + (buttonWidth + 10) * 2, buttonY)
+                .pos(startX + (buttonWidth + 10) * 3, buttonY)
                 .build());
 
-        // Global Config button
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.global_config"),
                 (button) -> {
@@ -90,10 +100,9 @@ public class PlayerListsScreen extends Screen {
                     }
                 })
                 .size(buttonWidth, 20)
-                .pos(startX + (buttonWidth + 10) * 3, buttonY)
+                .pos(startX + (buttonWidth + 10) * 4, buttonY)
                 .build());
 
-        // Done button
         this.addRenderableWidget(Button.builder(
                 Component.translatable("playernotes.gui.button.done"),
                 (button) -> {
@@ -102,7 +111,7 @@ public class PlayerListsScreen extends Screen {
                     }
                 })
                 .size(buttonWidth, 20)
-                .pos(startX + (buttonWidth + 10) * 4, buttonY)
+                .pos(startX + (buttonWidth + 10) * 5, buttonY)
                 .build());
     }
 
@@ -111,7 +120,66 @@ public class PlayerListsScreen extends Screen {
         listWidget.render(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         
-        // Title
         context.drawCenteredString(this.font, this.title, this.width / 2, 10, 0xFFFFFF);
+    }
+
+    public static class CopyListScreen extends Screen {
+        private final Screen parent;
+        private final NoteList sourceList;
+        private EditBox nameField;
+
+        public CopyListScreen(Screen parent, NoteList sourceList) {
+            super(Component.translatable("playernotes.gui.title.copy_list"));
+            this.parent = parent;
+            this.sourceList = sourceList;
+        }
+
+        @Override
+        protected void init() {
+            super.init();
+
+            int centerX = this.width / 2;
+            int fieldWidth = 200;
+
+            nameField = new EditBox(this.font, centerX - fieldWidth / 2, 50, fieldWidth, 20, Component.translatable("playernotes.gui.label.new_list_name"));
+            nameField.setValue(sourceList.getName() + " (Copy)");
+            this.addRenderableWidget(nameField);
+
+            this.addRenderableWidget(Button.builder(
+                    Component.translatable("playernotes.gui.button.save"),
+                    (button) -> {
+                        String newName = nameField.getValue().trim();
+                        if (!newName.isEmpty() && !NoteListManager.listNameExists(newName)) {
+                            NoteList copy = sourceList.copy();
+                            copy.setName(newName);
+                            copy.setPriority(NoteListManager.getNoteLists().size());
+                            NoteListManager.addNoteList(copy);
+                            if (this.minecraft != null) {
+                                this.minecraft.setScreen(parent);
+                            }
+                        }
+                    })
+                    .size(80, 20)
+                    .pos(centerX - 85, 80)
+                    .build());
+
+            this.addRenderableWidget(Button.builder(
+                    Component.translatable("playernotes.gui.button.cancel"),
+                    (button) -> {
+                        if (this.minecraft != null) {
+                            this.minecraft.setScreen(parent);
+                        }
+                    })
+                    .size(80, 20)
+                    .pos(centerX + 5, 80)
+                    .build());
+        }
+
+        @Override
+        public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+            super.render(context, mouseX, mouseY, delta);
+            context.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
+            context.drawString(this.font, Component.translatable("playernotes.gui.label.new_list_name").getString() + ":", this.width / 2 - 100, 40, 0xAAAAAA);
+        }
     }
 }
