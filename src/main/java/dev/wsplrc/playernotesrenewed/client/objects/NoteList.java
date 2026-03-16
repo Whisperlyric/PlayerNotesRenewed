@@ -7,24 +7,45 @@ import java.util.UUID;
 public class NoteList {
     private String name;
     private String prefix;
+    private String suffix;
     private List<PlayerEntry> players;
     private int priority;
     private boolean enabled;
+    private boolean prefixEnabled;
+    private boolean suffixEnabled;
+    private boolean prefixAppendReset;
+    private boolean suffixAppendReset;
+    private int prefixPriority;
+    private int suffixPriority;
 
     public NoteList() {
         this.name = "Unnamed List";
         this.prefix = "[N]";
+        this.suffix = "";
         this.players = new ArrayList<>();
         this.priority = 0;
         this.enabled = true;
+        this.prefixEnabled = true;
+        this.suffixEnabled = false;
+        this.prefixAppendReset = true;
+        this.suffixAppendReset = true;
+        this.prefixPriority = 0;
+        this.suffixPriority = 0;
     }
 
     public NoteList(String name) {
         this.name = name;
         this.prefix = "[N]";
+        this.suffix = "";
         this.players = new ArrayList<>();
         this.priority = 0;
         this.enabled = true;
+        this.prefixEnabled = true;
+        this.suffixEnabled = false;
+        this.prefixAppendReset = true;
+        this.suffixAppendReset = true;
+        this.prefixPriority = 0;
+        this.suffixPriority = 0;
     }
 
     public String getName() { return name; }
@@ -32,6 +53,27 @@ public class NoteList {
 
     public String getPrefix() { return prefix; }
     public void setPrefix(String prefix) { this.prefix = prefix; }
+
+    public String getSuffix() { return suffix != null ? suffix : ""; }
+    public void setSuffix(String suffix) { this.suffix = suffix; }
+
+    public boolean isPrefixEnabled() { return prefixEnabled; }
+    public void setPrefixEnabled(boolean prefixEnabled) { this.prefixEnabled = prefixEnabled; }
+
+    public boolean isSuffixEnabled() { return suffixEnabled; }
+    public void setSuffixEnabled(boolean suffixEnabled) { this.suffixEnabled = suffixEnabled; }
+
+    public boolean isPrefixAppendReset() { return prefixAppendReset; }
+    public void setPrefixAppendReset(boolean prefixAppendReset) { this.prefixAppendReset = prefixAppendReset; }
+
+    public boolean isSuffixAppendReset() { return suffixAppendReset; }
+    public void setSuffixAppendReset(boolean suffixAppendReset) { this.suffixAppendReset = suffixAppendReset; }
+
+    public int getPrefixPriority() { return prefixPriority; }
+    public void setPrefixPriority(int prefixPriority) { this.prefixPriority = prefixPriority; }
+
+    public int getSuffixPriority() { return suffixPriority; }
+    public void setSuffixPriority(int suffixPriority) { this.suffixPriority = suffixPriority; }
 
     public List<PlayerEntry> getPlayers() { 
         if (players == null) {
@@ -140,6 +182,35 @@ public class NoteList {
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
     public String getFormattedPrefix() {
-        return prefix.replace("&", "§");
+        String formatted = prefix.replace("&", "§");
+        if (prefixAppendReset) {
+            formatted += "§r";
+        }
+        return formatted;
+    }
+
+    public String getFormattedSuffix() {
+        String formatted = getSuffix().replace("&", "§");
+        if (suffixAppendReset) {
+            formatted += "§r";
+        }
+        return formatted;
+    }
+
+    public NoteList copy() {
+        NoteList copy = new NoteList(this.name + " (Copy)");
+        copy.setPrefix(this.prefix);
+        copy.setSuffix(this.suffix);
+        copy.setEnabled(this.enabled);
+        copy.setPrefixEnabled(this.prefixEnabled);
+        copy.setSuffixEnabled(this.suffixEnabled);
+        copy.setPrefixAppendReset(this.prefixAppendReset);
+        copy.setSuffixAppendReset(this.suffixAppendReset);
+        copy.setPrefixPriority(this.prefixPriority);
+        copy.setSuffixPriority(this.suffixPriority);
+        for (PlayerEntry entry : this.getPlayers()) {
+            copy.addPlayer(new PlayerEntry(entry.getName(), entry.getUuid()));
+        }
+        return copy;
     }
 }
