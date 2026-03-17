@@ -1,6 +1,7 @@
 package dev.wsplrc.playernotesrenewed.client.mixin;
 
 import dev.wsplrc.playernotesrenewed.client.config.Config;
+import dev.wsplrc.playernotesrenewed.client.objects.PrefixEntry;
 import dev.wsplrc.playernotesrenewed.client.utils.Utils;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.network.chat.Component;
@@ -11,6 +12,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
+
 @Mixin(value = EntityRenderer.class, priority = 1001)
 public class ChangeNametag {
 
@@ -20,12 +23,12 @@ public class ChangeNametag {
         if (!Config.editNameTags) return;
 
         if (Utils.playerHasPrefixByProfile(p.getGameProfile())) {
-            String prefixes = Utils.getPlayerPrefixesByProfile(p.getGameProfile());
-            String suffixes = Utils.getPlayerSuffixesByProfile(p.getGameProfile());
+            List<PrefixEntry> prefixEntries = Utils.getPlayerPrefixEntriesByProfile(p.getGameProfile());
+            List<PrefixEntry> suffixEntries = Utils.getPlayerSuffixEntriesByProfile(p.getGameProfile());
             
-            if (!prefixes.isEmpty() || !suffixes.isEmpty()) {
+            if (!prefixEntries.isEmpty() || !suffixEntries.isEmpty()) {
                 String playerName = p.getGameProfile().name();
-                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixes, suffixes);
+                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixEntries, suffixEntries);
                 
                 String originalText = cir.getReturnValue().getString();
                 String newText = originalText.replace(playerName, decoratedPlayerName);
@@ -35,20 +38,20 @@ public class ChangeNametag {
         }
     }
     
-    private String buildDecoratedPlayerName(String playerName, String prefixes, String suffixes) {
+    private String buildDecoratedPlayerName(String playerName, List<PrefixEntry> prefixEntries, List<PrefixEntry> suffixEntries) {
         StringBuilder sb = new StringBuilder();
         
-        if (!prefixes.isEmpty()) {
-            sb.append(prefixes);
-            if (!Config.styleAffectPlayerName) {
+        for (PrefixEntry entry : prefixEntries) {
+            sb.append(entry.getText()).append(" ");
+            if (!entry.isStyleAffectPlayerName()) {
                 sb.append("§r");
             }
         }
         
         sb.append(playerName);
         
-        if (!suffixes.isEmpty()) {
-            sb.append(suffixes);
+        for (PrefixEntry entry : suffixEntries) {
+            sb.append(" ").append(entry.getText());
         }
         
         return sb.toString();

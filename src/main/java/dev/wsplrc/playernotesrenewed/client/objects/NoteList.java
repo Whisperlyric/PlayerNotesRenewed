@@ -17,6 +17,7 @@ public class NoteList {
     private boolean suffixAppendReset;
     private int prefixPriority;
     private int suffixPriority;
+    private boolean styleAffectPlayerName;
 
     public NoteList() {
         this.name = "Unnamed List";
@@ -31,6 +32,7 @@ public class NoteList {
         this.suffixAppendReset = true;
         this.prefixPriority = 0;
         this.suffixPriority = 0;
+        this.styleAffectPlayerName = false;
     }
 
     public NoteList(String name) {
@@ -46,6 +48,7 @@ public class NoteList {
         this.suffixAppendReset = true;
         this.prefixPriority = 0;
         this.suffixPriority = 0;
+        this.styleAffectPlayerName = false;
     }
 
     public String getName() { return name; }
@@ -74,6 +77,9 @@ public class NoteList {
 
     public int getSuffixPriority() { return suffixPriority; }
     public void setSuffixPriority(int suffixPriority) { this.suffixPriority = suffixPriority; }
+
+    public boolean isStyleAffectPlayerName() { return styleAffectPlayerName; }
+    public void setStyleAffectPlayerName(boolean styleAffectPlayerName) { this.styleAffectPlayerName = styleAffectPlayerName; }
 
     public List<PlayerEntry> getPlayers() { 
         if (players == null) {
@@ -208,6 +214,7 @@ public class NoteList {
         copy.setSuffixAppendReset(this.suffixAppendReset);
         copy.setPrefixPriority(this.prefixPriority);
         copy.setSuffixPriority(this.suffixPriority);
+        copy.setStyleAffectPlayerName(this.styleAffectPlayerName);
         for (PlayerEntry entry : this.getPlayers()) {
             copy.addPlayer(new PlayerEntry(entry.getName(), entry.getUuid()));
         }

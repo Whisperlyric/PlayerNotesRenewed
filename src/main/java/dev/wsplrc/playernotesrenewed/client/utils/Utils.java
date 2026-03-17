@@ -2,6 +2,7 @@ package dev.wsplrc.playernotesrenewed.client.utils;
 
 import com.mojang.authlib.GameProfile;
 import dev.wsplrc.playernotesrenewed.client.config.NoteListManager;
+import dev.wsplrc.playernotesrenewed.client.objects.PrefixEntry;
 
 import java.util.List;
 
@@ -18,6 +19,34 @@ public class Utils {
             return true;
         }
         return NoteListManager.playerHasPrefixByName(profile.name());
+    }
+
+    public static List<PrefixEntry> getPlayerPrefixEntries(String uuid) {
+        String normalizedUuid = normalizeUuid(uuid);
+        return NoteListManager.getPrefixEntriesForPlayer(normalizedUuid);
+    }
+
+    public static List<PrefixEntry> getPlayerPrefixEntriesByProfile(GameProfile profile) {
+        String uuid = profile.id().toString();
+        List<PrefixEntry> entries = NoteListManager.getPrefixEntriesForPlayer(uuid);
+        if (entries.isEmpty()) {
+            entries = NoteListManager.getPrefixEntriesForPlayerByName(profile.name());
+        }
+        return entries;
+    }
+
+    public static List<PrefixEntry> getPlayerSuffixEntries(String uuid) {
+        String normalizedUuid = normalizeUuid(uuid);
+        return NoteListManager.getSuffixEntriesForPlayer(normalizedUuid);
+    }
+
+    public static List<PrefixEntry> getPlayerSuffixEntriesByProfile(GameProfile profile) {
+        String uuid = profile.id().toString();
+        List<PrefixEntry> entries = NoteListManager.getSuffixEntriesForPlayer(uuid);
+        if (entries.isEmpty()) {
+            entries = NoteListManager.getSuffixEntriesForPlayerByName(profile.name());
+        }
+        return entries;
     }
 
     public static String getPlayerPrefixes(String uuid) {

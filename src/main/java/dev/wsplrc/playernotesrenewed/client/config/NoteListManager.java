@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import dev.wsplrc.playernotesrenewed.client.objects.NoteList;
 import dev.wsplrc.playernotesrenewed.client.objects.PlayerEntry;
+import dev.wsplrc.playernotesrenewed.client.objects.PrefixEntry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -181,7 +182,7 @@ public class NoteListManager {
         return changed;
     }
 
-    public static List<String> getPrefixesForPlayer(String uuid) {
+    public static List<PrefixEntry> getPrefixEntriesForPlayer(String uuid) {
         List<NoteList> matchingLists = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByUUID(uuid) && list.isPrefixEnabled()) {
@@ -189,14 +190,14 @@ public class NoteListManager {
             }
         }
         matchingLists.sort((a, b) -> Integer.compare(a.getPrefixPriority(), b.getPrefixPriority()));
-        List<String> prefixes = new ArrayList<>();
+        List<PrefixEntry> entries = new ArrayList<>();
         for (NoteList list : matchingLists) {
-            prefixes.add(list.getFormattedPrefix());
+            entries.add(new PrefixEntry(list.getFormattedPrefix(), list.isStyleAffectPlayerName()));
         }
-        return prefixes;
+        return entries;
     }
 
-    public static List<String> getPrefixesForPlayerByName(String name) {
+    public static List<PrefixEntry> getPrefixEntriesForPlayerByName(String name) {
         List<NoteList> matchingLists = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByName(name) && list.isPrefixEnabled()) {
@@ -204,14 +205,14 @@ public class NoteListManager {
             }
         }
         matchingLists.sort((a, b) -> Integer.compare(a.getPrefixPriority(), b.getPrefixPriority()));
-        List<String> prefixes = new ArrayList<>();
+        List<PrefixEntry> entries = new ArrayList<>();
         for (NoteList list : matchingLists) {
-            prefixes.add(list.getFormattedPrefix());
+            entries.add(new PrefixEntry(list.getFormattedPrefix(), list.isStyleAffectPlayerName()));
         }
-        return prefixes;
+        return entries;
     }
 
-    public static List<String> getSuffixesForPlayer(String uuid) {
+    public static List<PrefixEntry> getSuffixEntriesForPlayer(String uuid) {
         List<NoteList> matchingLists = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByUUID(uuid) && list.isSuffixEnabled()) {
@@ -219,14 +220,14 @@ public class NoteListManager {
             }
         }
         matchingLists.sort((a, b) -> Integer.compare(a.getSuffixPriority(), b.getSuffixPriority()));
-        List<String> suffixes = new ArrayList<>();
+        List<PrefixEntry> entries = new ArrayList<>();
         for (NoteList list : matchingLists) {
-            suffixes.add(list.getFormattedSuffix());
+            entries.add(new PrefixEntry(list.getFormattedSuffix(), list.isStyleAffectPlayerName()));
         }
-        return suffixes;
+        return entries;
     }
 
-    public static List<String> getSuffixesForPlayerByName(String name) {
+    public static List<PrefixEntry> getSuffixEntriesForPlayerByName(String name) {
         List<NoteList> matchingLists = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByName(name) && list.isSuffixEnabled()) {
@@ -234,9 +235,45 @@ public class NoteListManager {
             }
         }
         matchingLists.sort((a, b) -> Integer.compare(a.getSuffixPriority(), b.getSuffixPriority()));
-        List<String> suffixes = new ArrayList<>();
+        List<PrefixEntry> entries = new ArrayList<>();
         for (NoteList list : matchingLists) {
-            suffixes.add(list.getFormattedSuffix());
+            entries.add(new PrefixEntry(list.getFormattedSuffix(), list.isStyleAffectPlayerName()));
+        }
+        return entries;
+    }
+
+    public static List<String> getPrefixesForPlayer(String uuid) {
+        List<PrefixEntry> entries = getPrefixEntriesForPlayer(uuid);
+        List<String> prefixes = new ArrayList<>();
+        for (PrefixEntry entry : entries) {
+            prefixes.add(entry.getText());
+        }
+        return prefixes;
+    }
+
+    public static List<String> getPrefixesForPlayerByName(String name) {
+        List<PrefixEntry> entries = getPrefixEntriesForPlayerByName(name);
+        List<String> prefixes = new ArrayList<>();
+        for (PrefixEntry entry : entries) {
+            prefixes.add(entry.getText());
+        }
+        return prefixes;
+    }
+
+    public static List<String> getSuffixesForPlayer(String uuid) {
+        List<PrefixEntry> entries = getSuffixEntriesForPlayer(uuid);
+        List<String> suffixes = new ArrayList<>();
+        for (PrefixEntry entry : entries) {
+            suffixes.add(entry.getText());
+        }
+        return suffixes;
+    }
+
+    public static List<String> getSuffixesForPlayerByName(String name) {
+        List<PrefixEntry> entries = getSuffixEntriesForPlayerByName(name);
+        List<String> suffixes = new ArrayList<>();
+        for (PrefixEntry entry : entries) {
+            suffixes.add(entry.getText());
         }
         return suffixes;
     }

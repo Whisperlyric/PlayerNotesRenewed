@@ -1,12 +1,12 @@
 package dev.wsplrc.playernotesrenewed.client.mixin;
 
 import dev.wsplrc.playernotesrenewed.client.config.Config;
+import dev.wsplrc.playernotesrenewed.client.objects.PrefixEntry;
 import dev.wsplrc.playernotesrenewed.client.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -46,10 +46,10 @@ public abstract class ChangeTablist {
         if (!Config.showPrefixForOwn && playerInfo.getProfile().name().equals(Minecraft.getInstance().player.getName().getString())) return;
 
         if (Utils.playerHasPrefixByProfile(playerInfo.getProfile())) {
-            String prefixes = Utils.getPlayerPrefixesByProfile(playerInfo.getProfile());
-            String suffixes = Utils.getPlayerSuffixesByProfile(playerInfo.getProfile());
+            List<PrefixEntry> prefixEntries = Utils.getPlayerPrefixEntriesByProfile(playerInfo.getProfile());
+            List<PrefixEntry> suffixEntries = Utils.getPlayerSuffixEntriesByProfile(playerInfo.getProfile());
             
-            if (!prefixes.isEmpty() || !suffixes.isEmpty()) {
+            if (!prefixEntries.isEmpty() || !suffixEntries.isEmpty()) {
                 Component original = cir.getReturnValue();
                 String originalText = original.getString();
                 String playerName = playerInfo.getProfile().name();
@@ -63,7 +63,7 @@ public abstract class ChangeTablist {
                     textAfterServer = originalText.substring(serverPrefix.length());
                 }
                 
-                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixes, suffixes);
+                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixEntries, suffixEntries);
                 
                 String newText;
                 if (!serverPrefix.isEmpty()) {
@@ -77,20 +77,20 @@ public abstract class ChangeTablist {
         }
     }
     
-    private String buildDecoratedPlayerName(String playerName, String prefixes, String suffixes) {
+    private String buildDecoratedPlayerName(String playerName, List<PrefixEntry> prefixEntries, List<PrefixEntry> suffixEntries) {
         StringBuilder sb = new StringBuilder();
         
-        if (!prefixes.isEmpty()) {
-            sb.append(prefixes);
-            if (!Config.styleAffectPlayerName) {
+        for (PrefixEntry entry : prefixEntries) {
+            sb.append(entry.getText()).append(" ");
+            if (!entry.isStyleAffectPlayerName()) {
                 sb.append("§r");
             }
         }
         
         sb.append(playerName);
         
-        if (!suffixes.isEmpty()) {
-            sb.append(suffixes);
+        for (PrefixEntry entry : suffixEntries) {
+            sb.append(" ").append(entry.getText());
         }
         
         return sb.toString();

@@ -31,6 +31,7 @@ public class PlayerListEditScreen extends Screen {
     private boolean currentSuffixEnabled;
     private boolean currentPrefixAppendReset;
     private boolean currentSuffixAppendReset;
+    private boolean currentStyleAffectPlayerName;
     private int currentPrefixPriority;
     private int currentSuffixPriority;
     private EditBox nameField;
@@ -43,6 +44,7 @@ public class PlayerListEditScreen extends Screen {
     private Checkbox suffixEnabledCheckbox;
     private Checkbox prefixResetCheckbox;
     private Checkbox suffixResetCheckbox;
+    private Checkbox styleAffectPlayerNameCheckbox;
     private PlayerListPlayersWidget playersWidget;
     private EditBox addPlayerField;
     private StringWidget feedbackWidget;
@@ -65,6 +67,7 @@ public class PlayerListEditScreen extends Screen {
         this.currentSuffixEnabled = noteList.isSuffixEnabled();
         this.currentPrefixAppendReset = noteList.isPrefixAppendReset();
         this.currentSuffixAppendReset = noteList.isSuffixAppendReset();
+        this.currentStyleAffectPlayerName = noteList.isStyleAffectPlayerName();
         this.currentPrefixPriority = noteList.getPrefixPriority();
         this.currentSuffixPriority = noteList.getSuffixPriority();
     }
@@ -119,6 +122,13 @@ public class PlayerListEditScreen extends Screen {
                 .selected(currentSuffixAppendReset)
                 .build();
         this.addRenderableWidget(suffixResetCheckbox);
+        yPos += 20;
+
+        styleAffectPlayerNameCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.style_affect_name"), this.font)
+                .pos(leftColumnX, yPos)
+                .selected(currentStyleAffectPlayerName)
+                .build();
+        this.addRenderableWidget(styleAffectPlayerNameCheckbox);
         yPos += 22;
 
         StringWidget priorityHint = new StringWidget(leftColumnX, yPos, leftColumnWidth, 12, 
@@ -283,6 +293,9 @@ public class PlayerListEditScreen extends Screen {
         if (suffixResetCheckbox != null) {
             currentSuffixAppendReset = suffixResetCheckbox.selected();
         }
+        if (styleAffectPlayerNameCheckbox != null) {
+            currentStyleAffectPlayerName = styleAffectPlayerNameCheckbox.selected();
+        }
         if (prefixPriorityField != null) {
             try {
                 currentPrefixPriority = Integer.parseInt(prefixPriorityField.getValue());
@@ -362,6 +375,7 @@ public class PlayerListEditScreen extends Screen {
         noteList.setSuffixEnabled(suffixEnabledCheckbox.selected());
         noteList.setPrefixAppendReset(prefixResetCheckbox.selected());
         noteList.setSuffixAppendReset(suffixResetCheckbox.selected());
+        noteList.setStyleAffectPlayerName(styleAffectPlayerNameCheckbox.selected());
         try {
             noteList.setPrefixPriority(Integer.parseInt(prefixPriorityField.getValue()));
         } catch (NumberFormatException e) {
