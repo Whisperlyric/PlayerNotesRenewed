@@ -15,12 +15,27 @@
 - 后缀优先级：数字小的显示在前面（更靠近玩家名）
 - 支持负数优先级以实现更灵活的排序
 
+### 配置自动迁移
+- 自动检测旧版本配置文件（v1.0.x）
+- 自动将旧配置迁移到新格式
+- 迁移规则：
+  - 所有优先级重设为默认值 `0`
+  - 若前后缀只有一项启用，自动合并为"整体样式"
+  - 若前后缀都启用，保持独立的前后缀样式
+  - `styleAffectPlayerName=false` 时启用独立的前后缀样式
+
 ## 优化
 
 - 改进了样式应用的逻辑，解决了之前"样式影响玩家名"选项的混乱问题
 - 前缀和后缀现在会自动在末尾添加重置符`§r`，避免样式污染
 
 ## 重要说明
+
+⚠️ **关于配置迁移的提醒**：
+- 首次启动 v1.1.0 时会自动迁移旧配置
+- 所有优先级将被重设为 `0`
+- 若您之前手动删除了样式类型3或4对应的列表，请检查迁移后的配置
+- 迁移完成后会在日志中显示提醒信息
 
 ⚠️ **关于样式覆盖的提醒**：
 - **玩家名样式**和**整体样式**选项会覆盖玩家原有的队伍颜色等样式
@@ -36,9 +51,43 @@
    - 需要改变玩家名颜色：使用玩家名样式
    - 需要统一整体样式：使用整体样式
 
+## 迁移示例
+
+### 旧版本配置
+```json
+{
+  "name": "VIP",
+  "prefix": "[VIP]",
+  "suffix": "",
+  "prefixEnabled": true,
+  "suffixEnabled": false,
+  "styleAffectPlayerName": true,
+  "prefixPriority": -1
+}
+```
+
+### 迁移后配置
+```json
+{
+  "name": "VIP",
+  "prefix": "[VIP]",
+  "suffix": "",
+  "prefixEnabled": false,
+  "suffixEnabled": false,
+  "prefixPriority": 0,
+  "suffixPriority": 0,
+  "prefixStyleEnabled": false,
+  "suffixStyleEnabled": false,
+  "playerNameStyleEnabled": false,
+  "wholeStyleEnabled": true,
+  "playerNamePrefix": "[VIP]"
+}
+```
+
 ## 技术细节
 
 - 新增 `StyleEntry` 数据结构用于管理样式条目
+- 新增 `LegacyNoteList` 用于读取旧版本配置
 - 重构了 `NoteList`、`NoteListManager`、`ChangeTablist`、`ChangeNametag` 等核心类
 - 更新了GUI界面以支持新的样式选项
 - 更新了中英文语言文件

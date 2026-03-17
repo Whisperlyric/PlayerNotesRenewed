@@ -3,12 +3,15 @@ package dev.wsplrc.playernotesrenewed.client.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import dev.wsplrc.playernotesrenewed.client.objects.LegacyNoteList;
 import dev.wsplrc.playernotesrenewed.client.objects.NoteList;
 import dev.wsplrc.playernotesrenewed.client.objects.PlayerEntry;
 import dev.wsplrc.playernotesrenewed.client.objects.StyleEntry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,6 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class NoteListManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger("PlayerNotesRenewed");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static List<NoteList> noteLists = new ArrayList<>();
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("PlayerNotes");
@@ -31,6 +35,23 @@ public class NoteListManager {
             var file = CONFIG_PATH.resolve(NOTE_LISTS_FILE);
             if (Files.exists(file)) {
                 String json = Files.readString(file);
+                
+                List<LegacyNoteList> legacyLists = tryLoadLegacyFormat(json);
+                if (legacyLists != null) {
+                    LOGGER.info("检测到旧版本配置文件，正在进行迁移...");
+                    noteLists = migrateFromLegacy(legacyLists);
+                    LOGGER.info("配置迁移完成！共迁移 {} 个列表", noteLists.size());
+                    LOGGER.warn("==========================================");
+                    LOGGER.warn("重要提醒：v1.1.0 已重构样式系统");
+                    LOGGER.warn("- 原有配置已自动迁移到新格式");
+                    LOGGER.warn("- 所有优先级已重设为默认值(0)");
+                    LOGGER.warn("- 若您之前手动删除了样式类型3或4对应的列表，请检查配置");
+                    LOGGER.warn("- 玩家名样式和整体样式会覆盖队伍颜色");
+                    LOGGER.warn("==========================================");
+                    save();
+                    return;
+                }
+                
                 noteLists = GSON.fromJson(json, new TypeToken<List<NoteList>>() {}.getType());
                 if (noteLists == null) {
                     noteLists = new ArrayList<>();
@@ -42,8 +63,82 @@ public class NoteListManager {
                 save();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("加载配置文件失败", e);
         }
+    }
+
+    private static List<LegacyNoteList> tryLoadLegacyFormat(String json) {
+        try {
+            List<LegacyNoteList> legacyLists = GSON.fromJson(json, new TypeToken<List<LegacyNoteList>>() {}.getType());
+            if (legacyLists != null && !legacyLists.isEmpty()) {
+                LegacyNoteList first = legacyLists.get(0);
+                if (first.hasLegacyFields() || !hasNewStyleFields(json)) {
+                    return legacyLists;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.debug("非旧版本配置格式");
+        }
+        return null;
+    }
+
+    private static boolean hasNewStyleFields(String json) {
+        return json.contains("prefixStyleEnabled") || 
+               json.contains("suffixStyleEnabled") || 
+               json.contains("playerNameStyleEnabled") || 
+               json.contains("wholeStyleEnabled");
+    }
+
+    private static List<NoteList> migrateFromLegacy(List<LegacyNoteList> legacyLists) {
+        List<NoteList> migratedLists = new ArrayList<>();
+        
+        for (LegacyNoteList legacy : legacyLists) {
+            NoteList newList = new NoteList();
+            newList.setName(legacy.getName());
+            newList.setEnabled(legacy.isEnabled());
+            newList.setPriority(legacy.getPriority());
+            
+            newList.setPrefix(legacy.getPrefix());
+            newList.setSuffix(legacy.getSuffix());
+            newList.setPrefixEnabled(legacy.isPrefixEnabled());
+            newList.setSuffixEnabled(legacy.isSuffixEnabled());
+            
+            newList.setPrefixPriority(0);
+            newList.setSuffixPriority(0);
+            
+            boolean hasPrefix = legacy.isPrefixEnabled() && !legacy.getPrefix().isEmpty();
+            boolean hasSuffix = legacy.isSuffixEnabled() && !legacy.getSuffix().isEmpty();
+            
+            if (!legacy.isStyleAffectPlayerName()) {
+                if (hasPrefix) {
+                    newList.setPrefixStyleEnabled(true);
+                }
+                if (hasSuffix) {
+                    newList.setSuffixStyleEnabled(true);
+                }
+            } else {
+                if (hasPrefix && hasSuffix) {
+                    newList.setPrefixStyleEnabled(true);
+                    newList.setSuffixStyleEnabled(true);
+                } else if (hasPrefix || hasSuffix) {
+                    newList.setWholeStyleEnabled(true);
+                    String styleText = hasPrefix ? legacy.getPrefix() : legacy.getSuffix();
+                    newList.setPlayerNamePrefix(styleText);
+                    newList.setPrefixEnabled(false);
+                    newList.setSuffixEnabled(false);
+                    LOGGER.info("列表 '{}' 的前后缀已合并为整体样式", legacy.getName());
+                }
+            }
+            
+            for (PlayerEntry player : legacy.getPlayers()) {
+                newList.addPlayer(new PlayerEntry(player.getName(), player.getUuid()));
+            }
+            
+            migratedLists.add(newList);
+            LOGGER.debug("已迁移列表: {}", legacy.getName());
+        }
+        
+        return migratedLists;
     }
 
     public static void save() {
@@ -52,7 +147,7 @@ public class NoteListManager {
             var file = CONFIG_PATH.resolve(NOTE_LISTS_FILE);
             Files.writeString(file, GSON.toJson(noteLists));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("保存配置文件失败", e);
         }
     }
 
