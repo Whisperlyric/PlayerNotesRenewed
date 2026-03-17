@@ -3,10 +3,12 @@ package dev.wsplrc.playernotesrenewed.client.mixin;
 import dev.wsplrc.playernotesrenewed.client.config.Config;
 import dev.wsplrc.playernotesrenewed.client.objects.PrefixEntry;
 import dev.wsplrc.playernotesrenewed.client.utils.Utils;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.scores.PlayerTeam;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,7 +23,6 @@ import java.util.regex.Pattern;
 public abstract class ChangeTablist {
 
     private static final Pattern SERVER_PREFIX_PATTERN = Pattern.compile("^(\\[[^\\]]+\\]\\s*)");
-    private static final Pattern PLAYER_NAME_PATTERN = Pattern.compile("^(\\w+)$");
 
     @Inject(method = "getPlayerInfos", at= @At("RETURN"), cancellable = true)
     public void changeOrder(CallbackInfoReturnable<List<PlayerInfo>> cir){
@@ -63,7 +64,8 @@ public abstract class ChangeTablist {
                     textAfterServer = originalText.substring(serverPrefix.length());
                 }
                 
-                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixEntries, suffixEntries);
+                String teamColorPrefix = getTeamColorPrefix(playerInfo);
+                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixEntries, suffixEntries, teamColorPrefix);
                 
                 String newText;
                 if (!serverPrefix.isEmpty()) {
@@ -77,13 +79,24 @@ public abstract class ChangeTablist {
         }
     }
     
-    private String buildDecoratedPlayerName(String playerName, List<PrefixEntry> prefixEntries, List<PrefixEntry> suffixEntries) {
+    private String getTeamColorPrefix(PlayerInfo playerInfo) {
+        PlayerTeam team = playerInfo.getTeam();
+        if (team != null) {
+            ChatFormatting color = team.getColor();
+            if (color != null) {
+                return "§" + color.getChar();
+            }
+        }
+        return "";
+    }
+    
+    private String buildDecoratedPlayerName(String playerName, List<PrefixEntry> prefixEntries, List<PrefixEntry> suffixEntries, String teamColorPrefix) {
         StringBuilder sb = new StringBuilder();
         
         for (PrefixEntry entry : prefixEntries) {
             sb.append(entry.getText()).append(" ");
             if (!entry.isStyleAffectPlayerName()) {
-                sb.append("§r");
+                sb.append("§r").append(teamColorPrefix);
             }
         }
         
