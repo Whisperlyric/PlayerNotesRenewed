@@ -1,20 +1,19 @@
 package dev.wsplrc.playernotesrenewed.client.mixin;
 
 import dev.wsplrc.playernotesrenewed.client.config.Config;
-import dev.wsplrc.playernotesrenewed.client.objects.PrefixEntry;
+import dev.wsplrc.playernotesrenewed.client.objects.StyleEntry;
 import dev.wsplrc.playernotesrenewed.client.utils.Utils;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.scores.PlayerTeam;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,10 +46,9 @@ public abstract class ChangeTablist {
         if (!Config.showPrefixForOwn && playerInfo.getProfile().name().equals(Minecraft.getInstance().player.getName().getString())) return;
 
         if (Utils.playerHasPrefixByProfile(playerInfo.getProfile())) {
-            List<PrefixEntry> prefixEntries = Utils.getPlayerPrefixEntriesByProfile(playerInfo.getProfile());
-            List<PrefixEntry> suffixEntries = Utils.getPlayerSuffixEntriesByProfile(playerInfo.getProfile());
+            List<StyleEntry> entries = Utils.getStyleEntriesByProfile(playerInfo.getProfile());
             
-            if (!prefixEntries.isEmpty() || !suffixEntries.isEmpty()) {
+            if (!entries.isEmpty()) {
                 Component original = cir.getReturnValue();
                 String originalText = original.getString();
                 String playerName = playerInfo.getProfile().name();
@@ -64,8 +62,7 @@ public abstract class ChangeTablist {
                     textAfterServer = originalText.substring(serverPrefix.length());
                 }
                 
-                String teamColorPrefix = getTeamColorPrefix(playerInfo);
-                String decoratedPlayerName = buildDecoratedPlayerName(playerName, prefixEntries, suffixEntries, teamColorPrefix);
+                String decoratedPlayerName = buildDecoratedPlayerName(playerName, entries);
                 
                 String newText;
                 if (!serverPrefix.isEmpty()) {
@@ -79,30 +76,61 @@ public abstract class ChangeTablist {
         }
     }
     
-    private String getTeamColorPrefix(PlayerInfo playerInfo) {
-        PlayerTeam team = playerInfo.getTeam();
-        if (team != null) {
-            ChatFormatting color = team.getColor();
-            if (color != null) {
-                return "§" + color.getChar();
+    private String buildDecoratedPlayerName(String playerName, List<StyleEntry> entries) {
+        List<StyleEntry> prefixes = new ArrayList<>();
+        List<StyleEntry> suffixes = new ArrayList<>();
+        List<StyleEntry> playerNamePrefixes = new ArrayList<>();
+        List<StyleEntry> playerNameSuffixes = new ArrayList<>();
+        boolean hasWholeStyle = false;
+        String wholeStyleText = "";
+        
+        for (StyleEntry entry : entries) {
+            switch (entry.getType()) {
+                case PREFIX:
+                    prefixes.add(entry);
+                    break;
+                case SUFFIX:
+                    suffixes.add(entry);
+                    break;
+                case PLAYER_NAME_PREFIX:
+                    playerNamePrefixes.add(entry);
+                    break;
+                case PLAYER_NAME_SUFFIX:
+                    playerNameSuffixes.add(entry);
+                    break;
+                case WHOLE_STYLE:
+                    hasWholeStyle = true;
+                    wholeStyleText = entry.getText();
+                    break;
             }
         }
-        return "";
-    }
-    
-    private String buildDecoratedPlayerName(String playerName, List<PrefixEntry> prefixEntries, List<PrefixEntry> suffixEntries, String teamColorPrefix) {
+        
+        prefixes.sort(Comparator.comparingInt(StyleEntry::getPriority));
+        suffixes.sort(Comparator.comparingInt(StyleEntry::getPriority));
+        playerNamePrefixes.sort(Comparator.comparingInt(StyleEntry::getPriority));
+        playerNameSuffixes.sort(Comparator.comparingInt(StyleEntry::getPriority).reversed());
+        
         StringBuilder sb = new StringBuilder();
         
-        for (PrefixEntry entry : prefixEntries) {
+        if (hasWholeStyle) {
+            sb.append(wholeStyleText);
+        }
+        
+        for (StyleEntry entry : prefixes) {
             sb.append(entry.getText()).append(" ");
-            if (!entry.isStyleAffectPlayerName()) {
-                sb.append("§r").append(teamColorPrefix);
-            }
+        }
+        
+        for (StyleEntry entry : playerNamePrefixes) {
+            sb.append(entry.getText());
         }
         
         sb.append(playerName);
         
-        for (PrefixEntry entry : suffixEntries) {
+        for (StyleEntry entry : playerNameSuffixes) {
+            sb.append(entry.getText());
+        }
+        
+        for (StyleEntry entry : suffixes) {
             sb.append(" ").append(entry.getText());
         }
         

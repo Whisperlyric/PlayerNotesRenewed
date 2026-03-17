@@ -8,47 +8,56 @@ public class NoteList {
     private String name;
     private String prefix;
     private String suffix;
+    private String playerNamePrefix;
+    private String playerNameSuffix;
     private List<PlayerEntry> players;
     private int priority;
     private boolean enabled;
     private boolean prefixEnabled;
     private boolean suffixEnabled;
-    private boolean prefixAppendReset;
-    private boolean suffixAppendReset;
     private int prefixPriority;
     private int suffixPriority;
-    private boolean styleAffectPlayerName;
+    private boolean prefixStyleEnabled;
+    private boolean suffixStyleEnabled;
+    private boolean playerNameStyleEnabled;
+    private boolean wholeStyleEnabled;
 
     public NoteList() {
         this.name = "Unnamed List";
         this.prefix = "[N]";
         this.suffix = "";
+        this.playerNamePrefix = "";
+        this.playerNameSuffix = "";
         this.players = new ArrayList<>();
         this.priority = 0;
         this.enabled = true;
         this.prefixEnabled = true;
         this.suffixEnabled = false;
-        this.prefixAppendReset = true;
-        this.suffixAppendReset = true;
         this.prefixPriority = 0;
         this.suffixPriority = 0;
-        this.styleAffectPlayerName = false;
+        this.prefixStyleEnabled = false;
+        this.suffixStyleEnabled = false;
+        this.playerNameStyleEnabled = false;
+        this.wholeStyleEnabled = false;
     }
 
     public NoteList(String name) {
         this.name = name;
         this.prefix = "[N]";
         this.suffix = "";
+        this.playerNamePrefix = "";
+        this.playerNameSuffix = "";
         this.players = new ArrayList<>();
         this.priority = 0;
         this.enabled = true;
         this.prefixEnabled = true;
         this.suffixEnabled = false;
-        this.prefixAppendReset = true;
-        this.suffixAppendReset = true;
         this.prefixPriority = 0;
         this.suffixPriority = 0;
-        this.styleAffectPlayerName = false;
+        this.prefixStyleEnabled = false;
+        this.suffixStyleEnabled = false;
+        this.playerNameStyleEnabled = false;
+        this.wholeStyleEnabled = false;
     }
 
     public String getName() { return name; }
@@ -60,17 +69,17 @@ public class NoteList {
     public String getSuffix() { return suffix != null ? suffix : ""; }
     public void setSuffix(String suffix) { this.suffix = suffix; }
 
+    public String getPlayerNamePrefix() { return playerNamePrefix != null ? playerNamePrefix : ""; }
+    public void setPlayerNamePrefix(String playerNamePrefix) { this.playerNamePrefix = playerNamePrefix; }
+
+    public String getPlayerNameSuffix() { return playerNameSuffix != null ? playerNameSuffix : ""; }
+    public void setPlayerNameSuffix(String playerNameSuffix) { this.playerNameSuffix = playerNameSuffix; }
+
     public boolean isPrefixEnabled() { return prefixEnabled; }
     public void setPrefixEnabled(boolean prefixEnabled) { this.prefixEnabled = prefixEnabled; }
 
     public boolean isSuffixEnabled() { return suffixEnabled; }
     public void setSuffixEnabled(boolean suffixEnabled) { this.suffixEnabled = suffixEnabled; }
-
-    public boolean isPrefixAppendReset() { return prefixAppendReset; }
-    public void setPrefixAppendReset(boolean prefixAppendReset) { this.prefixAppendReset = prefixAppendReset; }
-
-    public boolean isSuffixAppendReset() { return suffixAppendReset; }
-    public void setSuffixAppendReset(boolean suffixAppendReset) { this.suffixAppendReset = suffixAppendReset; }
 
     public int getPrefixPriority() { return prefixPriority; }
     public void setPrefixPriority(int prefixPriority) { this.prefixPriority = prefixPriority; }
@@ -78,8 +87,17 @@ public class NoteList {
     public int getSuffixPriority() { return suffixPriority; }
     public void setSuffixPriority(int suffixPriority) { this.suffixPriority = suffixPriority; }
 
-    public boolean isStyleAffectPlayerName() { return styleAffectPlayerName; }
-    public void setStyleAffectPlayerName(boolean styleAffectPlayerName) { this.styleAffectPlayerName = styleAffectPlayerName; }
+    public boolean isPrefixStyleEnabled() { return prefixStyleEnabled; }
+    public void setPrefixStyleEnabled(boolean prefixStyleEnabled) { this.prefixStyleEnabled = prefixStyleEnabled; }
+
+    public boolean isSuffixStyleEnabled() { return suffixStyleEnabled; }
+    public void setSuffixStyleEnabled(boolean suffixStyleEnabled) { this.suffixStyleEnabled = suffixStyleEnabled; }
+
+    public boolean isPlayerNameStyleEnabled() { return playerNameStyleEnabled; }
+    public void setPlayerNameStyleEnabled(boolean playerNameStyleEnabled) { this.playerNameStyleEnabled = playerNameStyleEnabled; }
+
+    public boolean isWholeStyleEnabled() { return wholeStyleEnabled; }
+    public void setWholeStyleEnabled(boolean wholeStyleEnabled) { this.wholeStyleEnabled = wholeStyleEnabled; }
 
     public List<PlayerEntry> getPlayers() { 
         if (players == null) {
@@ -88,24 +106,6 @@ public class NoteList {
         return players; 
     }
     public void setPlayers(List<PlayerEntry> players) { this.players = players; }
-
-    @Deprecated
-    public List<String> getPlayerUUIDs() { 
-        List<String> uuids = new ArrayList<>();
-        for (PlayerEntry entry : getPlayers()) {
-            uuids.add(entry.getUuid());
-        }
-        return uuids;
-    }
-    @Deprecated
-    public void setPlayerUUIDs(List<String> playerUUIDs) { 
-        this.players = new ArrayList<>();
-        if (playerUUIDs != null) {
-            for (String uuid : playerUUIDs) {
-                this.players.add(new PlayerEntry("Unknown", uuid));
-            }
-        }
-    }
 
     public void addPlayer(PlayerEntry player) {
         if (players == null) {
@@ -189,32 +189,38 @@ public class NoteList {
 
     public String getFormattedPrefix() {
         String formatted = prefix.replace("&", "§");
-        if (prefixAppendReset) {
-            formatted += "§r";
-        }
+        formatted += "§r";
         return formatted;
     }
 
     public String getFormattedSuffix() {
         String formatted = getSuffix().replace("&", "§");
-        if (suffixAppendReset) {
-            formatted += "§r";
-        }
         return formatted;
+    }
+
+    public String getFormattedPlayerNamePrefix() {
+        return getPlayerNamePrefix().replace("&", "§");
+    }
+
+    public String getFormattedPlayerNameSuffix() {
+        return getPlayerNameSuffix().replace("&", "§");
     }
 
     public NoteList copy() {
         NoteList copy = new NoteList(this.name + " (Copy)");
         copy.setPrefix(this.prefix);
         copy.setSuffix(this.suffix);
+        copy.setPlayerNamePrefix(this.playerNamePrefix);
+        copy.setPlayerNameSuffix(this.playerNameSuffix);
         copy.setEnabled(this.enabled);
         copy.setPrefixEnabled(this.prefixEnabled);
         copy.setSuffixEnabled(this.suffixEnabled);
-        copy.setPrefixAppendReset(this.prefixAppendReset);
-        copy.setSuffixAppendReset(this.suffixAppendReset);
         copy.setPrefixPriority(this.prefixPriority);
         copy.setSuffixPriority(this.suffixPriority);
-        copy.setStyleAffectPlayerName(this.styleAffectPlayerName);
+        copy.setPrefixStyleEnabled(this.prefixStyleEnabled);
+        copy.setSuffixStyleEnabled(this.suffixStyleEnabled);
+        copy.setPlayerNameStyleEnabled(this.playerNameStyleEnabled);
+        copy.setWholeStyleEnabled(this.wholeStyleEnabled);
         for (PlayerEntry entry : this.getPlayers()) {
             copy.addPlayer(new PlayerEntry(entry.getName(), entry.getUuid()));
         }

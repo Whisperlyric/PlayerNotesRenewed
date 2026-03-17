@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import dev.wsplrc.playernotesrenewed.client.objects.NoteList;
 import dev.wsplrc.playernotesrenewed.client.objects.PlayerEntry;
-import dev.wsplrc.playernotesrenewed.client.objects.PrefixEntry;
+import dev.wsplrc.playernotesrenewed.client.objects.StyleEntry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -182,100 +182,43 @@ public class NoteListManager {
         return changed;
     }
 
-    public static List<PrefixEntry> getPrefixEntriesForPlayer(String uuid) {
-        List<NoteList> matchingLists = new ArrayList<>();
+    public static List<StyleEntry> getStyleEntriesForPlayer(String uuid) {
+        List<StyleEntry> entries = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
-            if (list.containsPlayerByUUID(uuid) && list.isPrefixEnabled()) {
-                matchingLists.add(list);
+            if (list.containsPlayerByUUID(uuid)) {
+                addStyleEntriesFromList(entries, list);
             }
-        }
-        matchingLists.sort((a, b) -> Integer.compare(a.getPrefixPriority(), b.getPrefixPriority()));
-        List<PrefixEntry> entries = new ArrayList<>();
-        for (NoteList list : matchingLists) {
-            entries.add(new PrefixEntry(list.getFormattedPrefix(), list.isStyleAffectPlayerName()));
         }
         return entries;
     }
 
-    public static List<PrefixEntry> getPrefixEntriesForPlayerByName(String name) {
-        List<NoteList> matchingLists = new ArrayList<>();
+    public static List<StyleEntry> getStyleEntriesForPlayerByName(String name) {
+        List<StyleEntry> entries = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
-            if (list.containsPlayerByName(name) && list.isPrefixEnabled()) {
-                matchingLists.add(list);
+            if (list.containsPlayerByName(name)) {
+                addStyleEntriesFromList(entries, list);
             }
-        }
-        matchingLists.sort((a, b) -> Integer.compare(a.getPrefixPriority(), b.getPrefixPriority()));
-        List<PrefixEntry> entries = new ArrayList<>();
-        for (NoteList list : matchingLists) {
-            entries.add(new PrefixEntry(list.getFormattedPrefix(), list.isStyleAffectPlayerName()));
         }
         return entries;
     }
 
-    public static List<PrefixEntry> getSuffixEntriesForPlayer(String uuid) {
-        List<NoteList> matchingLists = new ArrayList<>();
-        for (NoteList list : getEnabledNoteLists()) {
-            if (list.containsPlayerByUUID(uuid) && list.isSuffixEnabled()) {
-                matchingLists.add(list);
-            }
+    private static void addStyleEntriesFromList(List<StyleEntry> entries, NoteList list) {
+        if (list.isPrefixEnabled()) {
+            entries.add(new StyleEntry(list.getFormattedPrefix(), StyleEntry.StyleType.PREFIX, list.getPrefixPriority()));
         }
-        matchingLists.sort((a, b) -> Integer.compare(a.getSuffixPriority(), b.getSuffixPriority()));
-        List<PrefixEntry> entries = new ArrayList<>();
-        for (NoteList list : matchingLists) {
-            entries.add(new PrefixEntry(list.getFormattedSuffix(), list.isStyleAffectPlayerName()));
+        if (list.isSuffixEnabled()) {
+            entries.add(new StyleEntry(list.getFormattedSuffix(), StyleEntry.StyleType.SUFFIX, list.getSuffixPriority()));
         }
-        return entries;
-    }
-
-    public static List<PrefixEntry> getSuffixEntriesForPlayerByName(String name) {
-        List<NoteList> matchingLists = new ArrayList<>();
-        for (NoteList list : getEnabledNoteLists()) {
-            if (list.containsPlayerByName(name) && list.isSuffixEnabled()) {
-                matchingLists.add(list);
-            }
+        if (list.isPrefixStyleEnabled()) {
+            entries.add(new StyleEntry(list.getFormattedPlayerNamePrefix(), StyleEntry.StyleType.PLAYER_NAME_PREFIX, list.getPrefixPriority()));
         }
-        matchingLists.sort((a, b) -> Integer.compare(a.getSuffixPriority(), b.getSuffixPriority()));
-        List<PrefixEntry> entries = new ArrayList<>();
-        for (NoteList list : matchingLists) {
-            entries.add(new PrefixEntry(list.getFormattedSuffix(), list.isStyleAffectPlayerName()));
+        if (list.isSuffixStyleEnabled()) {
+            entries.add(new StyleEntry(list.getFormattedPlayerNameSuffix(), StyleEntry.StyleType.PLAYER_NAME_SUFFIX, list.getSuffixPriority()));
         }
-        return entries;
-    }
-
-    public static List<String> getPrefixesForPlayer(String uuid) {
-        List<PrefixEntry> entries = getPrefixEntriesForPlayer(uuid);
-        List<String> prefixes = new ArrayList<>();
-        for (PrefixEntry entry : entries) {
-            prefixes.add(entry.getText());
+        if (list.isWholeStyleEnabled()) {
+            String wholeStyle = list.getFormattedPlayerNamePrefix();
+            entries.add(new StyleEntry(wholeStyle, StyleEntry.StyleType.WHOLE_STYLE, list.getPrefixPriority()));
         }
-        return prefixes;
-    }
-
-    public static List<String> getPrefixesForPlayerByName(String name) {
-        List<PrefixEntry> entries = getPrefixEntriesForPlayerByName(name);
-        List<String> prefixes = new ArrayList<>();
-        for (PrefixEntry entry : entries) {
-            prefixes.add(entry.getText());
-        }
-        return prefixes;
-    }
-
-    public static List<String> getSuffixesForPlayer(String uuid) {
-        List<PrefixEntry> entries = getSuffixEntriesForPlayer(uuid);
-        List<String> suffixes = new ArrayList<>();
-        for (PrefixEntry entry : entries) {
-            suffixes.add(entry.getText());
-        }
-        return suffixes;
-    }
-
-    public static List<String> getSuffixesForPlayerByName(String name) {
-        List<PrefixEntry> entries = getSuffixEntriesForPlayerByName(name);
-        List<String> suffixes = new ArrayList<>();
-        for (PrefixEntry entry : entries) {
-            suffixes.add(entry.getText());
-        }
-        return suffixes;
     }
 
     public static boolean playerHasPrefix(String uuid) {

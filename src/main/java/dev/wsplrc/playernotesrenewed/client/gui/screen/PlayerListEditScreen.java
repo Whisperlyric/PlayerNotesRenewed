@@ -12,7 +12,6 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.ChatFormatting;
 
 import java.util.ArrayList;
@@ -26,25 +25,31 @@ public class PlayerListEditScreen extends Screen {
     private String currentName;
     private String currentPrefix;
     private String currentSuffix;
+    private String currentPlayerNamePrefix;
+    private String currentPlayerNameSuffix;
     private boolean currentEnabled;
     private boolean currentPrefixEnabled;
     private boolean currentSuffixEnabled;
-    private boolean currentPrefixAppendReset;
-    private boolean currentSuffixAppendReset;
-    private boolean currentStyleAffectPlayerName;
     private int currentPrefixPriority;
     private int currentSuffixPriority;
+    private boolean currentPrefixStyleEnabled;
+    private boolean currentSuffixStyleEnabled;
+    private boolean currentPlayerNameStyleEnabled;
+    private boolean currentWholeStyleEnabled;
     private EditBox nameField;
     private EditBox prefixField;
     private EditBox suffixField;
+    private EditBox playerNamePrefixField;
+    private EditBox playerNameSuffixField;
     private EditBox prefixPriorityField;
     private EditBox suffixPriorityField;
     private Checkbox enabledCheckbox;
     private Checkbox prefixEnabledCheckbox;
     private Checkbox suffixEnabledCheckbox;
-    private Checkbox prefixResetCheckbox;
-    private Checkbox suffixResetCheckbox;
-    private Checkbox styleAffectPlayerNameCheckbox;
+    private Checkbox prefixStyleCheckbox;
+    private Checkbox suffixStyleCheckbox;
+    private Checkbox playerNameStyleCheckbox;
+    private Checkbox wholeStyleCheckbox;
     private PlayerListPlayersWidget playersWidget;
     private EditBox addPlayerField;
     private StringWidget feedbackWidget;
@@ -62,14 +67,17 @@ public class PlayerListEditScreen extends Screen {
         this.currentName = noteList.getName();
         this.currentPrefix = noteList.getPrefix();
         this.currentSuffix = noteList.getSuffix();
+        this.currentPlayerNamePrefix = noteList.getPlayerNamePrefix();
+        this.currentPlayerNameSuffix = noteList.getPlayerNameSuffix();
         this.currentEnabled = noteList.isEnabled();
         this.currentPrefixEnabled = noteList.isPrefixEnabled();
         this.currentSuffixEnabled = noteList.isSuffixEnabled();
-        this.currentPrefixAppendReset = noteList.isPrefixAppendReset();
-        this.currentSuffixAppendReset = noteList.isSuffixAppendReset();
-        this.currentStyleAffectPlayerName = noteList.isStyleAffectPlayerName();
         this.currentPrefixPriority = noteList.getPrefixPriority();
         this.currentSuffixPriority = noteList.getSuffixPriority();
+        this.currentPrefixStyleEnabled = noteList.isPrefixStyleEnabled();
+        this.currentSuffixStyleEnabled = noteList.isSuffixStyleEnabled();
+        this.currentPlayerNameStyleEnabled = noteList.isPlayerNameStyleEnabled();
+        this.currentWholeStyleEnabled = noteList.isWholeStyleEnabled();
     }
 
     @Override
@@ -110,25 +118,37 @@ public class PlayerListEditScreen extends Screen {
         this.addRenderableWidget(suffixEnabledCheckbox);
         yPos += 22;
 
-        prefixResetCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.prefix_reset"), this.font)
+        StringWidget styleLabel = new StringWidget(leftColumnX, yPos, leftColumnWidth, 12, 
+            Component.translatable("playernotes.gui.label.style_options"), this.font);
+        this.addRenderableOnly(styleLabel);
+        yPos += 14;
+
+        prefixStyleCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.prefix_style"), this.font)
                 .pos(leftColumnX, yPos)
-                .selected(currentPrefixAppendReset)
+                .selected(currentPrefixStyleEnabled)
                 .build();
-        this.addRenderableWidget(prefixResetCheckbox);
+        this.addRenderableWidget(prefixStyleCheckbox);
         yPos += 20;
 
-        suffixResetCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.suffix_reset"), this.font)
+        suffixStyleCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.suffix_style"), this.font)
                 .pos(leftColumnX, yPos)
-                .selected(currentSuffixAppendReset)
+                .selected(currentSuffixStyleEnabled)
                 .build();
-        this.addRenderableWidget(suffixResetCheckbox);
+        this.addRenderableWidget(suffixStyleCheckbox);
         yPos += 20;
 
-        styleAffectPlayerNameCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.style_affect_name"), this.font)
+        playerNameStyleCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.player_name_style"), this.font)
                 .pos(leftColumnX, yPos)
-                .selected(currentStyleAffectPlayerName)
+                .selected(currentPlayerNameStyleEnabled)
                 .build();
-        this.addRenderableWidget(styleAffectPlayerNameCheckbox);
+        this.addRenderableWidget(playerNameStyleCheckbox);
+        yPos += 20;
+
+        wholeStyleCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.whole_style"), this.font)
+                .pos(leftColumnX, yPos)
+                .selected(currentWholeStyleEnabled)
+                .build();
+        this.addRenderableWidget(wholeStyleCheckbox);
         yPos += 22;
 
         StringWidget priorityHint = new StringWidget(leftColumnX, yPos, leftColumnWidth, 12, 
@@ -287,14 +307,17 @@ public class PlayerListEditScreen extends Screen {
         if (suffixEnabledCheckbox != null) {
             currentSuffixEnabled = suffixEnabledCheckbox.selected();
         }
-        if (prefixResetCheckbox != null) {
-            currentPrefixAppendReset = prefixResetCheckbox.selected();
+        if (prefixStyleCheckbox != null) {
+            currentPrefixStyleEnabled = prefixStyleCheckbox.selected();
         }
-        if (suffixResetCheckbox != null) {
-            currentSuffixAppendReset = suffixResetCheckbox.selected();
+        if (suffixStyleCheckbox != null) {
+            currentSuffixStyleEnabled = suffixStyleCheckbox.selected();
         }
-        if (styleAffectPlayerNameCheckbox != null) {
-            currentStyleAffectPlayerName = styleAffectPlayerNameCheckbox.selected();
+        if (playerNameStyleCheckbox != null) {
+            currentPlayerNameStyleEnabled = playerNameStyleCheckbox.selected();
+        }
+        if (wholeStyleCheckbox != null) {
+            currentWholeStyleEnabled = wholeStyleCheckbox.selected();
         }
         if (prefixPriorityField != null) {
             try {
@@ -373,9 +396,10 @@ public class PlayerListEditScreen extends Screen {
         noteList.setEnabled(enabledCheckbox.selected());
         noteList.setPrefixEnabled(prefixEnabledCheckbox.selected());
         noteList.setSuffixEnabled(suffixEnabledCheckbox.selected());
-        noteList.setPrefixAppendReset(prefixResetCheckbox.selected());
-        noteList.setSuffixAppendReset(suffixResetCheckbox.selected());
-        noteList.setStyleAffectPlayerName(styleAffectPlayerNameCheckbox.selected());
+        noteList.setPrefixStyleEnabled(prefixStyleCheckbox.selected());
+        noteList.setSuffixStyleEnabled(suffixStyleCheckbox.selected());
+        noteList.setPlayerNameStyleEnabled(playerNameStyleCheckbox.selected());
+        noteList.setWholeStyleEnabled(wholeStyleCheckbox.selected());
         try {
             noteList.setPrefixPriority(Integer.parseInt(prefixPriorityField.getValue()));
         } catch (NumberFormatException e) {
@@ -408,7 +432,7 @@ public class PlayerListEditScreen extends Screen {
 
         StringBuilder preview = new StringBuilder();
         if (prefixEnabledCheckbox.selected()) {
-            preview.append(noteList.getFormattedPrefix());
+            preview.append(noteList.getFormattedPrefix()).append(" ");
         }
         preview.append("PlayerName");
         if (suffixEnabledCheckbox.selected()) {
@@ -505,51 +529,52 @@ public class PlayerListEditScreen extends Screen {
             this.addRenderableOnly(exampleWidget);
             y += lineHeight + 5;
 
-            StringWidget wikiWidget = new StringWidget(x, y, 350, 12, 
+            StringWidget wikiWidget = new StringWidget(x, y, 300, 12, 
                 Component.translatable("playernotes.gui.help.wiki"), this.font);
             textWidgets.add(wikiWidget);
             this.addRenderableOnly(wikiWidget);
             y += lineHeight + 10;
 
-            StringWidget featuresLabel = new StringWidget(x, y, 200, 12, 
+            StringWidget featuresLabel = new StringWidget(x, y, 100, 12, 
                 Component.translatable("playernotes.gui.help.features"), this.font);
             textWidgets.add(featuresLabel);
             this.addRenderableOnly(featuresLabel);
             y += lineHeight;
 
-            StringWidget suffixWidget = new StringWidget(x + 10, y, 300, 12, 
+            StringWidget suffixHelp = new StringWidget(x + 10, y, 300, 12, 
                 Component.translatable("playernotes.gui.help.suffix"), this.font);
-            textWidgets.add(suffixWidget);
-            this.addRenderableOnly(suffixWidget);
+            textWidgets.add(suffixHelp);
+            this.addRenderableOnly(suffixHelp);
             y += lineHeight;
 
-            StringWidget priorityWidget = new StringWidget(x + 10, y, 300, 12, 
+            StringWidget priorityHelp = new StringWidget(x + 10, y, 300, 12, 
                 Component.translatable("playernotes.gui.help.priority"), this.font);
-            textWidgets.add(priorityWidget);
-            this.addRenderableOnly(priorityWidget);
+            textWidgets.add(priorityHelp);
+            this.addRenderableOnly(priorityHelp);
             y += lineHeight;
 
-            StringWidget resetWidget = new StringWidget(x + 10, y, 300, 12, 
-                Component.translatable("playernotes.gui.help.reset_code"), this.font);
-            textWidgets.add(resetWidget);
-            this.addRenderableOnly(resetWidget);
+            StringWidget styleHelp = new StringWidget(x + 10, y, 300, 12, 
+                Component.translatable("playernotes.gui.help.style_types"), this.font);
+            textWidgets.add(styleHelp);
+            this.addRenderableOnly(styleHelp);
 
             this.addRenderableWidget(Button.builder(
                     Component.translatable("playernotes.gui.button.done"),
-                    (btn) -> {
+                    (button) -> {
                         if (this.minecraft != null) {
                             this.minecraft.setScreen(parent);
                         }
                     })
                     .size(80, 20)
-                    .pos(this.width / 2 - 40, this.height - 40)
+                    .pos(this.width / 2 - 40, this.height - 30)
                     .build());
         }
 
         @Override
-        public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-            super.render(context, mouseX, mouseY, delta);
-            context.drawCenteredString(this.font, this.title, this.width / 2, 10, 0xFFFFFF);
+        public void onClose() {
+            if (this.minecraft != null) {
+                this.minecraft.setScreen(parent);
+            }
         }
     }
 }
