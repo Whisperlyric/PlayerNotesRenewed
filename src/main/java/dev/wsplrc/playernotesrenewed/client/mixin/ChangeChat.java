@@ -1,5 +1,9 @@
 package dev.wsplrc.playernotesrenewed.client.mixin;
 
+// TODO v1.0.7: 聊天前后缀支持 - 当前实现未生效，需要进一步研究
+// 参见 TODO.md 了解已尝试的方案和技术难点
+
+/*
 import dev.wsplrc.playernotesrenewed.client.config.Config;
 import dev.wsplrc.playernotesrenewed.client.utils.Utils;
 import net.minecraft.client.Minecraft;
@@ -7,8 +11,10 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,14 +22,31 @@ import java.util.regex.Pattern;
 @Mixin(value = ChatComponent.class, priority = 2000)
 public abstract class ChangeChat {
 
+    @Unique
+    private boolean playernotes$processing = false;
+
     private static final Pattern VANILLA_MESSAGE_FORMAT = Pattern.compile("^((-> )?\\[[^<]+] )?<([^>]*)>\\s.+$");
 
-    @ModifyVariable(
-            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
+    @Inject(
+            method = "addMessage(Lnet/minecraft/network/chat/Component;)V",
             at = @At("HEAD"),
-            argsOnly = true
+            cancellable = true
     )
-    public Component playernotes$modifyChatMessage(Component message) {
+    public void playernotes$modifyChatMessage1(Component message, CallbackInfo ci) {
+        if (playernotes$processing) {
+            return;
+        }
+        
+        Component modified = modifyMessage(message);
+        if (modified != message) {
+            playernotes$processing = true;
+            ci.cancel();
+            ((ChatComponent)(Object)this).addMessage(modified);
+            playernotes$processing = false;
+        }
+    }
+
+    private Component modifyMessage(Component message) {
         if (!Config.showPrefixInChat && !Config.showSuffixInChat) {
             return message;
         }
@@ -99,3 +122,4 @@ public abstract class ChangeChat {
         return sb.toString();
     }
 }
+*/
