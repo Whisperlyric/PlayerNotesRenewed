@@ -2,20 +2,12 @@ package dev.wsplrc.playernotesrenewed.client.objects;
 
 public class StyleEntry {
     private final String text;
-    private final StyleType type;
+    private final StyleMode mode;
     private final int priority;
 
-    public enum StyleType {
-        PREFIX,
-        SUFFIX,
-        PLAYER_NAME_PREFIX,
-        PLAYER_NAME_SUFFIX,
-        WHOLE_STYLE
-    }
-
-    public StyleEntry(String text, StyleType type, int priority) {
+    public StyleEntry(String text, StyleMode mode, int priority) {
         this.text = text;
-        this.type = type;
+        this.mode = mode;
         this.priority = priority;
     }
 
@@ -23,8 +15,8 @@ public class StyleEntry {
         return text;
     }
 
-    public StyleType getType() {
-        return type;
+    public StyleMode getMode() {
+        return mode;
     }
 
     public int getPriority() {

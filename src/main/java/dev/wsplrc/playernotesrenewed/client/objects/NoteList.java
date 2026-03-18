@@ -6,98 +6,40 @@ import java.util.UUID;
 
 public class NoteList {
     private String name;
-    private String prefix;
-    private String suffix;
-    private String playerNamePrefix;
-    private String playerNameSuffix;
-    private List<PlayerEntry> players;
+    private StyleMode styleMode;
+    private String styleText;
     private int priority;
     private boolean enabled;
-    private boolean prefixEnabled;
-    private boolean suffixEnabled;
-    private int prefixPriority;
-    private int suffixPriority;
-    private boolean prefixStyleEnabled;
-    private boolean suffixStyleEnabled;
-    private boolean playerNameStyleEnabled;
-    private boolean wholeStyleEnabled;
+    private List<PlayerEntry> players;
 
     public NoteList() {
         this.name = "Unnamed List";
-        this.prefix = "[N]";
-        this.suffix = "";
-        this.playerNamePrefix = "";
-        this.playerNameSuffix = "";
-        this.players = new ArrayList<>();
+        this.styleMode = StyleMode.PREFIX;
+        this.styleText = "[N]";
         this.priority = 0;
         this.enabled = true;
-        this.prefixEnabled = true;
-        this.suffixEnabled = false;
-        this.prefixPriority = 0;
-        this.suffixPriority = 0;
-        this.prefixStyleEnabled = false;
-        this.suffixStyleEnabled = false;
-        this.playerNameStyleEnabled = false;
-        this.wholeStyleEnabled = false;
+        this.players = new ArrayList<>();
     }
 
     public NoteList(String name) {
+        this();
         this.name = name;
-        this.prefix = "[N]";
-        this.suffix = "";
-        this.playerNamePrefix = "";
-        this.playerNameSuffix = "";
-        this.players = new ArrayList<>();
-        this.priority = 0;
-        this.enabled = true;
-        this.prefixEnabled = true;
-        this.suffixEnabled = false;
-        this.prefixPriority = 0;
-        this.suffixPriority = 0;
-        this.prefixStyleEnabled = false;
-        this.suffixStyleEnabled = false;
-        this.playerNameStyleEnabled = false;
-        this.wholeStyleEnabled = false;
     }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public String getPrefix() { return prefix; }
-    public void setPrefix(String prefix) { this.prefix = prefix; }
+    public StyleMode getStyleMode() { return styleMode != null ? styleMode : StyleMode.PREFIX; }
+    public void setStyleMode(StyleMode styleMode) { this.styleMode = styleMode; }
 
-    public String getSuffix() { return suffix != null ? suffix : ""; }
-    public void setSuffix(String suffix) { this.suffix = suffix; }
+    public String getStyleText() { return styleText != null ? styleText : ""; }
+    public void setStyleText(String styleText) { this.styleText = styleText; }
 
-    public String getPlayerNamePrefix() { return playerNamePrefix != null ? playerNamePrefix : ""; }
-    public void setPlayerNamePrefix(String playerNamePrefix) { this.playerNamePrefix = playerNamePrefix; }
+    public int getPriority() { return priority; }
+    public void setPriority(int priority) { this.priority = priority; }
 
-    public String getPlayerNameSuffix() { return playerNameSuffix != null ? playerNameSuffix : ""; }
-    public void setPlayerNameSuffix(String playerNameSuffix) { this.playerNameSuffix = playerNameSuffix; }
-
-    public boolean isPrefixEnabled() { return prefixEnabled; }
-    public void setPrefixEnabled(boolean prefixEnabled) { this.prefixEnabled = prefixEnabled; }
-
-    public boolean isSuffixEnabled() { return suffixEnabled; }
-    public void setSuffixEnabled(boolean suffixEnabled) { this.suffixEnabled = suffixEnabled; }
-
-    public int getPrefixPriority() { return prefixPriority; }
-    public void setPrefixPriority(int prefixPriority) { this.prefixPriority = prefixPriority; }
-
-    public int getSuffixPriority() { return suffixPriority; }
-    public void setSuffixPriority(int suffixPriority) { this.suffixPriority = suffixPriority; }
-
-    public boolean isPrefixStyleEnabled() { return prefixStyleEnabled; }
-    public void setPrefixStyleEnabled(boolean prefixStyleEnabled) { this.prefixStyleEnabled = prefixStyleEnabled; }
-
-    public boolean isSuffixStyleEnabled() { return suffixStyleEnabled; }
-    public void setSuffixStyleEnabled(boolean suffixStyleEnabled) { this.suffixStyleEnabled = suffixStyleEnabled; }
-
-    public boolean isPlayerNameStyleEnabled() { return playerNameStyleEnabled; }
-    public void setPlayerNameStyleEnabled(boolean playerNameStyleEnabled) { this.playerNameStyleEnabled = playerNameStyleEnabled; }
-
-    public boolean isWholeStyleEnabled() { return wholeStyleEnabled; }
-    public void setWholeStyleEnabled(boolean wholeStyleEnabled) { this.wholeStyleEnabled = wholeStyleEnabled; }
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
     public List<PlayerEntry> getPlayers() { 
         if (players == null) {
@@ -181,46 +123,37 @@ public class NoteList {
         return null;
     }
 
-    public int getPriority() { return priority; }
-    public void setPriority(int priority) { this.priority = priority; }
-
-    public boolean isEnabled() { return enabled; }
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public String getFormattedStyleText() {
+        String formatted = getStyleText().replace("&", "§");
+        return formatted;
+    }
 
     public String getFormattedPrefix() {
-        String formatted = prefix.replace("&", "§");
-        formatted += "§r";
+        String formatted = getStyleText().replace("&", "§");
+        if (!formatted.endsWith("§r")) {
+            formatted += "§r";
+        }
         return formatted;
     }
 
     public String getFormattedSuffix() {
-        String formatted = getSuffix().replace("&", "§");
-        return formatted;
+        return getStyleText().replace("&", "§");
     }
 
-    public String getFormattedPlayerNamePrefix() {
-        return getPlayerNamePrefix().replace("&", "§");
+    public String getFormattedPlayerNameStyle() {
+        return getStyleText().replace("&", "§");
     }
 
-    public String getFormattedPlayerNameSuffix() {
-        return getPlayerNameSuffix().replace("&", "§");
+    public String getFormattedWholeStyle() {
+        return getStyleText().replace("&", "§");
     }
 
     public NoteList copy() {
         NoteList copy = new NoteList(this.name + " (Copy)");
-        copy.setPrefix(this.prefix);
-        copy.setSuffix(this.suffix);
-        copy.setPlayerNamePrefix(this.playerNamePrefix);
-        copy.setPlayerNameSuffix(this.playerNameSuffix);
+        copy.setStyleMode(this.styleMode);
+        copy.setStyleText(this.styleText);
         copy.setEnabled(this.enabled);
-        copy.setPrefixEnabled(this.prefixEnabled);
-        copy.setSuffixEnabled(this.suffixEnabled);
-        copy.setPrefixPriority(this.prefixPriority);
-        copy.setSuffixPriority(this.suffixPriority);
-        copy.setPrefixStyleEnabled(this.prefixStyleEnabled);
-        copy.setSuffixStyleEnabled(this.suffixStyleEnabled);
-        copy.setPlayerNameStyleEnabled(this.playerNameStyleEnabled);
-        copy.setWholeStyleEnabled(this.wholeStyleEnabled);
+        copy.setPriority(this.priority);
         for (PlayerEntry entry : this.getPlayers()) {
             copy.addPlayer(new PlayerEntry(entry.getName(), entry.getUuid()));
         }

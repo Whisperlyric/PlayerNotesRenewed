@@ -7,6 +7,7 @@ import dev.wsplrc.playernotesrenewed.client.objects.LegacyNoteList;
 import dev.wsplrc.playernotesrenewed.client.objects.NoteList;
 import dev.wsplrc.playernotesrenewed.client.objects.PlayerEntry;
 import dev.wsplrc.playernotesrenewed.client.objects.StyleEntry;
+import dev.wsplrc.playernotesrenewed.client.objects.StyleMode;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -44,9 +45,8 @@ public class NoteListManager {
                     LOGGER.warn("==========================================");
                     LOGGER.warn("重要提醒：v1.1.0 已重构样式系统");
                     LOGGER.warn("- 原有配置已自动迁移到新格式");
-                    LOGGER.warn("- 所有优先级已重设为默认值(0)");
-                    LOGGER.warn("- 若您之前手动删除了样式类型3或4对应的列表，请检查配置");
-                    LOGGER.warn("- 玩家名样式和整体样式会覆盖队伍颜色");
+                    LOGGER.warn("- 样式模式：前缀/后缀/玩家名/整体");
+                    LOGGER.warn("- 玩家名和整体模式会覆盖队伍颜色");
                     LOGGER.warn("==========================================");
                     save();
                     return;
@@ -58,7 +58,7 @@ public class NoteListManager {
                 }
             } else {
                 NoteList defaultList = new NoteList("Default");
-                defaultList.setPrefix("[N]");
+                defaultList.setStyleText("[N]");
                 noteLists.add(defaultList);
                 save();
             }
@@ -72,7 +72,7 @@ public class NoteListManager {
             List<LegacyNoteList> legacyLists = GSON.fromJson(json, new TypeToken<List<LegacyNoteList>>() {}.getType());
             if (legacyLists != null && !legacyLists.isEmpty()) {
                 LegacyNoteList first = legacyLists.get(0);
-                if (first.hasLegacyFields() || !hasNewStyleFields(json)) {
+                if (first.hasLegacyFields()) {
                     return legacyLists;
                 }
             }
@@ -80,13 +80,6 @@ public class NoteListManager {
             LOGGER.debug("非旧版本配置格式");
         }
         return null;
-    }
-
-    private static boolean hasNewStyleFields(String json) {
-        return json.contains("prefixStyleEnabled") || 
-               json.contains("suffixStyleEnabled") || 
-               json.contains("playerNameStyleEnabled") || 
-               json.contains("wholeStyleEnabled");
     }
 
     private static List<NoteList> migrateFromLegacy(List<LegacyNoteList> legacyLists) {
@@ -98,36 +91,21 @@ public class NoteListManager {
             newList.setEnabled(legacy.isEnabled());
             newList.setPriority(legacy.getPriority());
             
-            newList.setPrefix(legacy.getPrefix());
-            newList.setSuffix(legacy.getSuffix());
-            newList.setPrefixEnabled(legacy.isPrefixEnabled());
-            newList.setSuffixEnabled(legacy.isSuffixEnabled());
-            
-            newList.setPrefixPriority(0);
-            newList.setSuffixPriority(0);
-            
             boolean hasPrefix = legacy.isPrefixEnabled() && !legacy.getPrefix().isEmpty();
             boolean hasSuffix = legacy.isSuffixEnabled() && !legacy.getSuffix().isEmpty();
             
-            if (!legacy.isStyleAffectPlayerName()) {
-                if (hasPrefix) {
-                    newList.setPrefixStyleEnabled(true);
-                }
-                if (hasSuffix) {
-                    newList.setSuffixStyleEnabled(true);
-                }
+            if (hasPrefix && hasSuffix) {
+                newList.setStyleMode(StyleMode.WHOLE);
+                newList.setStyleText(legacy.getPrefix() + " " + legacy.getSuffix());
+            } else if (hasPrefix) {
+                newList.setStyleMode(StyleMode.PREFIX);
+                newList.setStyleText(legacy.getPrefix());
+            } else if (hasSuffix) {
+                newList.setStyleMode(StyleMode.SUFFIX);
+                newList.setStyleText(legacy.getSuffix());
             } else {
-                if (hasPrefix && hasSuffix) {
-                    newList.setPrefixStyleEnabled(true);
-                    newList.setSuffixStyleEnabled(true);
-                } else if (hasPrefix || hasSuffix) {
-                    newList.setWholeStyleEnabled(true);
-                    String styleText = hasPrefix ? legacy.getPrefix() : legacy.getSuffix();
-                    newList.setPlayerNamePrefix(styleText);
-                    newList.setPrefixEnabled(false);
-                    newList.setSuffixEnabled(false);
-                    LOGGER.info("列表 '{}' 的前后缀已合并为整体样式", legacy.getName());
-                }
+                newList.setStyleMode(StyleMode.PREFIX);
+                newList.setStyleText("");
             }
             
             for (PlayerEntry player : legacy.getPlayers()) {
@@ -281,7 +259,11 @@ public class NoteListManager {
         List<StyleEntry> entries = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByUUID(uuid)) {
-                addStyleEntriesFromList(entries, list);
+                entries.add(new StyleEntry(
+                    list.getFormattedStyleText(),
+                    list.getStyleMode(),
+                    list.getPriority()
+                ));
             }
         }
         return entries;
@@ -291,29 +273,14 @@ public class NoteListManager {
         List<StyleEntry> entries = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByName(name)) {
-                addStyleEntriesFromList(entries, list);
+                entries.add(new StyleEntry(
+                    list.getFormattedStyleText(),
+                    list.getStyleMode(),
+                    list.getPriority()
+                ));
             }
         }
         return entries;
-    }
-
-    private static void addStyleEntriesFromList(List<StyleEntry> entries, NoteList list) {
-        if (list.isPrefixEnabled()) {
-            entries.add(new StyleEntry(list.getFormattedPrefix(), StyleEntry.StyleType.PREFIX, list.getPrefixPriority()));
-        }
-        if (list.isSuffixEnabled()) {
-            entries.add(new StyleEntry(list.getFormattedSuffix(), StyleEntry.StyleType.SUFFIX, list.getSuffixPriority()));
-        }
-        if (list.isPrefixStyleEnabled()) {
-            entries.add(new StyleEntry(list.getFormattedPlayerNamePrefix(), StyleEntry.StyleType.PLAYER_NAME_PREFIX, list.getPrefixPriority()));
-        }
-        if (list.isSuffixStyleEnabled()) {
-            entries.add(new StyleEntry(list.getFormattedPlayerNameSuffix(), StyleEntry.StyleType.PLAYER_NAME_SUFFIX, list.getSuffixPriority()));
-        }
-        if (list.isWholeStyleEnabled()) {
-            String wholeStyle = list.getFormattedPlayerNamePrefix();
-            entries.add(new StyleEntry(wholeStyle, StyleEntry.StyleType.WHOLE_STYLE, list.getPrefixPriority()));
-        }
     }
 
     public static boolean playerHasPrefix(String uuid) {

@@ -2,6 +2,7 @@ package dev.wsplrc.playernotesrenewed.client.mixin;
 
 import dev.wsplrc.playernotesrenewed.client.config.Config;
 import dev.wsplrc.playernotesrenewed.client.objects.StyleEntry;
+import dev.wsplrc.playernotesrenewed.client.objects.StyleMode;
 import dev.wsplrc.playernotesrenewed.client.utils.Utils;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.network.chat.Component;
@@ -42,55 +43,49 @@ public class ChangeNametag {
     private String buildDecoratedPlayerName(String playerName, List<StyleEntry> entries) {
         List<StyleEntry> prefixes = new ArrayList<>();
         List<StyleEntry> suffixes = new ArrayList<>();
-        List<StyleEntry> playerNamePrefixes = new ArrayList<>();
-        List<StyleEntry> playerNameSuffixes = new ArrayList<>();
-        boolean hasWholeStyle = false;
-        String wholeStyleText = "";
+        List<StyleEntry> playerNameStyles = new ArrayList<>();
+        List<StyleEntry> wholeStyles = new ArrayList<>();
         
         for (StyleEntry entry : entries) {
-            switch (entry.getType()) {
+            switch (entry.getMode()) {
                 case PREFIX:
                     prefixes.add(entry);
                     break;
                 case SUFFIX:
                     suffixes.add(entry);
                     break;
-                case PLAYER_NAME_PREFIX:
-                    playerNamePrefixes.add(entry);
+                case PLAYER_NAME:
+                    playerNameStyles.add(entry);
                     break;
-                case PLAYER_NAME_SUFFIX:
-                    playerNameSuffixes.add(entry);
-                    break;
-                case WHOLE_STYLE:
-                    hasWholeStyle = true;
-                    wholeStyleText = entry.getText();
+                case WHOLE:
+                    wholeStyles.add(entry);
                     break;
             }
         }
         
         prefixes.sort(Comparator.comparingInt(StyleEntry::getPriority));
         suffixes.sort(Comparator.comparingInt(StyleEntry::getPriority));
-        playerNamePrefixes.sort(Comparator.comparingInt(StyleEntry::getPriority));
-        playerNameSuffixes.sort(Comparator.comparingInt(StyleEntry::getPriority).reversed());
+        playerNameStyles.sort(Comparator.comparingInt(StyleEntry::getPriority));
+        wholeStyles.sort(Comparator.comparingInt(StyleEntry::getPriority));
         
         StringBuilder sb = new StringBuilder();
         
-        if (hasWholeStyle) {
-            sb.append(wholeStyleText);
+        for (StyleEntry entry : wholeStyles) {
+            sb.append(entry.getText());
         }
         
         for (StyleEntry entry : prefixes) {
-            sb.append(entry.getText()).append(" ");
+            sb.append(entry.getText()).append("§r ");
         }
         
-        for (StyleEntry entry : playerNamePrefixes) {
+        for (StyleEntry entry : playerNameStyles) {
             sb.append(entry.getText());
         }
         
         sb.append(playerName);
         
-        for (StyleEntry entry : playerNameSuffixes) {
-            sb.append(entry.getText());
+        for (StyleEntry entry : playerNameStyles) {
+            sb.append("§r");
         }
         
         for (StyleEntry entry : suffixes) {
