@@ -259,11 +259,21 @@ public class NoteListManager {
         List<StyleEntry> entries = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByUUID(uuid)) {
-                entries.add(new StyleEntry(
-                    list.getFormattedStyleText(),
-                    list.getStyleMode(),
-                    list.getPriority()
-                ));
+                if (list.getStyleMode() == StyleMode.WHOLE) {
+                    entries.add(new StyleEntry(
+                        list.getFormattedWholePrefix(),
+                        list.getFormattedWholePlayerNameStyle(),
+                        list.getFormattedWholeSuffix(),
+                        list.isOverridePlayerName(),
+                        list.getPriority()
+                    ));
+                } else {
+                    entries.add(new StyleEntry(
+                        list.getFormattedStyleText(),
+                        list.getStyleMode(),
+                        list.getPriority()
+                    ));
+                }
             }
         }
         return entries;
@@ -273,11 +283,21 @@ public class NoteListManager {
         List<StyleEntry> entries = new ArrayList<>();
         for (NoteList list : getEnabledNoteLists()) {
             if (list.containsPlayerByName(name)) {
-                entries.add(new StyleEntry(
-                    list.getFormattedStyleText(),
-                    list.getStyleMode(),
-                    list.getPriority()
-                ));
+                if (list.getStyleMode() == StyleMode.WHOLE) {
+                    entries.add(new StyleEntry(
+                        list.getFormattedWholePrefix(),
+                        list.getFormattedWholePlayerNameStyle(),
+                        list.getFormattedWholeSuffix(),
+                        list.isOverridePlayerName(),
+                        list.getPriority()
+                    ));
+                } else {
+                    entries.add(new StyleEntry(
+                        list.getFormattedStyleText(),
+                        list.getStyleMode(),
+                        list.getPriority()
+                    ));
+                }
             }
         }
         return entries;

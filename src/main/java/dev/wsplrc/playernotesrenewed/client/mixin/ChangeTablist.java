@@ -108,7 +108,13 @@ public abstract class ChangeTablist {
         StringBuilder sb = new StringBuilder();
         
         for (StyleEntry entry : wholeStyles) {
-            sb.append(entry.getText());
+            sb.append(entry.getWholePrefix());
+            if (entry.isOverridePlayerName()) {
+                sb.append(entry.getWholePlayerNameStyle());
+            } else {
+                sb.append(entry.getWholePlayerNameStyle()).append(playerName);
+            }
+            sb.append(entry.getWholeSuffix());
         }
         
         for (StyleEntry entry : prefixes) {
@@ -119,7 +125,9 @@ public abstract class ChangeTablist {
             sb.append(entry.getText());
         }
         
-        sb.append(playerName);
+        if (wholeStyles.isEmpty()) {
+            sb.append(playerName);
+        }
         
         for (StyleEntry entry : playerNameStyles) {
             sb.append("§r");

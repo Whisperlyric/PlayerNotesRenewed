@@ -71,7 +71,13 @@ public class ChangeNametag {
         StringBuilder sb = new StringBuilder();
         
         for (StyleEntry entry : wholeStyles) {
-            sb.append(entry.getText());
+            sb.append(entry.getWholePrefix());
+            if (entry.isOverridePlayerName()) {
+                sb.append(entry.getWholePlayerNameStyle());
+            } else {
+                sb.append(entry.getWholePlayerNameStyle()).append(playerName);
+            }
+            sb.append(entry.getWholeSuffix());
         }
         
         for (StyleEntry entry : prefixes) {
@@ -82,7 +88,9 @@ public class ChangeNametag {
             sb.append(entry.getText());
         }
         
-        sb.append(playerName);
+        if (wholeStyles.isEmpty()) {
+            sb.append(playerName);
+        }
         
         for (StyleEntry entry : playerNameStyles) {
             sb.append("§r");

@@ -8,6 +8,10 @@ public class NoteList {
     private String name;
     private StyleMode styleMode;
     private String styleText;
+    private String wholePrefix;
+    private String wholePlayerNameStyle;
+    private String wholeSuffix;
+    private boolean overridePlayerName;
     private int priority;
     private boolean enabled;
     private List<PlayerEntry> players;
@@ -16,6 +20,10 @@ public class NoteList {
         this.name = "Unnamed List";
         this.styleMode = StyleMode.PREFIX;
         this.styleText = "[N]";
+        this.wholePrefix = "";
+        this.wholePlayerNameStyle = "";
+        this.wholeSuffix = "";
+        this.overridePlayerName = false;
         this.priority = 0;
         this.enabled = true;
         this.players = new ArrayList<>();
@@ -34,6 +42,18 @@ public class NoteList {
 
     public String getStyleText() { return styleText != null ? styleText : ""; }
     public void setStyleText(String styleText) { this.styleText = styleText; }
+
+    public String getWholePrefix() { return wholePrefix != null ? wholePrefix : ""; }
+    public void setWholePrefix(String wholePrefix) { this.wholePrefix = wholePrefix; }
+
+    public String getWholePlayerNameStyle() { return wholePlayerNameStyle != null ? wholePlayerNameStyle : ""; }
+    public void setWholePlayerNameStyle(String wholePlayerNameStyle) { this.wholePlayerNameStyle = wholePlayerNameStyle; }
+
+    public String getWholeSuffix() { return wholeSuffix != null ? wholeSuffix : ""; }
+    public void setWholeSuffix(String wholeSuffix) { this.wholeSuffix = wholeSuffix; }
+
+    public boolean isOverridePlayerName() { return overridePlayerName; }
+    public void setOverridePlayerName(boolean overridePlayerName) { this.overridePlayerName = overridePlayerName; }
 
     public int getPriority() { return priority; }
     public void setPriority(int priority) { this.priority = priority; }
@@ -124,8 +144,7 @@ public class NoteList {
     }
 
     public String getFormattedStyleText() {
-        String formatted = getStyleText().replace("&", "§");
-        return formatted;
+        return getStyleText().replace("&", "§");
     }
 
     public String getFormattedPrefix() {
@@ -144,14 +163,26 @@ public class NoteList {
         return getStyleText().replace("&", "§");
     }
 
-    public String getFormattedWholeStyle() {
-        return getStyleText().replace("&", "§");
+    public String getFormattedWholePrefix() {
+        return getWholePrefix().replace("&", "§");
+    }
+
+    public String getFormattedWholePlayerNameStyle() {
+        return getWholePlayerNameStyle().replace("&", "§");
+    }
+
+    public String getFormattedWholeSuffix() {
+        return getWholeSuffix().replace("&", "§");
     }
 
     public NoteList copy() {
         NoteList copy = new NoteList(this.name + " (Copy)");
         copy.setStyleMode(this.styleMode);
         copy.setStyleText(this.styleText);
+        copy.setWholePrefix(this.wholePrefix);
+        copy.setWholePlayerNameStyle(this.wholePlayerNameStyle);
+        copy.setWholeSuffix(this.wholeSuffix);
+        copy.setOverridePlayerName(this.overridePlayerName);
         copy.setEnabled(this.enabled);
         copy.setPriority(this.priority);
         for (PlayerEntry entry : this.getPlayers()) {

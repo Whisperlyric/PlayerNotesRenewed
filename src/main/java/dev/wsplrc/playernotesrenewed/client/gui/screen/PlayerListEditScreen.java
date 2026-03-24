@@ -26,15 +26,27 @@ public class PlayerListEditScreen extends Screen {
     private String currentName;
     private StyleMode currentStyleMode;
     private String currentStyleText;
+    private String currentWholePrefix;
+    private String currentWholePlayerNameStyle;
+    private String currentWholeSuffix;
+    private boolean currentOverridePlayerName;
     private boolean currentEnabled;
+    
     private EditBox nameField;
     private EditBox styleTextField;
+    private EditBox wholePrefixField;
+    private EditBox wholePlayerNameStyleField;
+    private EditBox wholeSuffixField;
     private Button styleModeBtn;
+    private Checkbox overrideCheckbox;
     private Checkbox enabledCheckbox;
     private PlayerListPlayersWidget playersWidget;
     private EditBox addPlayerField;
     private StringWidget feedbackWidget;
     private long feedbackTime;
+    
+    private StringWidget styleTextLabel;
+    private int styleTextYPos;
 
     public PlayerListEditScreen(Screen parent, NoteList noteList) {
         this(parent, noteList, false);
@@ -48,6 +60,10 @@ public class PlayerListEditScreen extends Screen {
         this.currentName = noteList.getName();
         this.currentStyleMode = noteList.getStyleMode();
         this.currentStyleText = noteList.getStyleText();
+        this.currentWholePrefix = noteList.getWholePrefix();
+        this.currentWholePlayerNameStyle = noteList.getWholePlayerNameStyle();
+        this.currentWholeSuffix = noteList.getWholeSuffix();
+        this.currentOverridePlayerName = noteList.isOverridePlayerName();
         this.currentEnabled = noteList.isEnabled();
     }
 
@@ -83,34 +99,13 @@ public class PlayerListEditScreen extends Screen {
         this.addRenderableWidget(styleModeBtn);
         yPos += 24;
 
-        StringWidget styleTextLabel = new StringWidget(leftColumnX, yPos, leftColumnWidth, 12, 
-            getStyleTextLabel(currentStyleMode), this.font);
-        this.addRenderableOnly(styleTextLabel);
-        yPos += 14;
+        styleTextYPos = yPos;
 
-        styleTextField = new EditBox(this.font, leftColumnX, yPos, leftColumnWidth, 18, Component.translatable("playernotes.gui.label.style_text"));
-        styleTextField.setValue(currentStyleText);
-        this.addRenderableWidget(styleTextField);
-        yPos += 24;
-
-        enabledCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.enabled"), this.font)
-                .pos(leftColumnX, yPos)
-                .selected(currentEnabled)
-                .build();
-        this.addRenderableWidget(enabledCheckbox);
-        yPos += 24;
-
-        this.addRenderableWidget(Button.builder(
-                Component.translatable("playernotes.gui.button.prefix_format_help"),
-                (button) -> {
-                    saveCurrentState();
-                    if (this.minecraft != null) {
-                        this.minecraft.setScreen(new PrefixFormatHelpScreen(this));
-                    }
-                })
-                .size(Math.min(120, leftColumnWidth), 18)
-                .pos(leftColumnX, yPos)
-                .build());
+        if (currentStyleMode == StyleMode.WHOLE) {
+            addWholeStyleWidgets(leftColumnX, leftColumnWidth);
+        } else {
+            addSimpleStyleWidgets(leftColumnX, leftColumnWidth);
+        }
 
         int listHeight = this.height - 160;
         playersWidget = new PlayerListPlayersWidget(this.minecraft, rightColumnWidth, listHeight, 20, 25, noteList);
@@ -204,6 +199,99 @@ public class PlayerListEditScreen extends Screen {
         playersWidget.updateOnlineStatus();
     }
 
+    private void addSimpleStyleWidgets(int x, int width) {
+        int yPos = styleTextYPos;
+
+        styleTextLabel = new StringWidget(x, yPos, width, 12, 
+            getStyleTextLabel(currentStyleMode), this.font);
+        this.addRenderableOnly(styleTextLabel);
+        yPos += 14;
+
+        styleTextField = new EditBox(this.font, x, yPos, width, 18, Component.translatable("playernotes.gui.label.style_text"));
+        styleTextField.setValue(currentStyleText);
+        this.addRenderableWidget(styleTextField);
+        yPos += 24;
+
+        enabledCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.enabled"), this.font)
+                .pos(x, yPos)
+                .selected(currentEnabled)
+                .build();
+        this.addRenderableWidget(enabledCheckbox);
+        yPos += 24;
+
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("playernotes.gui.button.prefix_format_help"),
+                (button) -> {
+                    saveCurrentState();
+                    if (this.minecraft != null) {
+                        this.minecraft.setScreen(new PrefixFormatHelpScreen(this));
+                    }
+                })
+                .size(Math.min(120, width), 18)
+                .pos(x, yPos)
+                .build());
+    }
+
+    private void addWholeStyleWidgets(int x, int width) {
+        int yPos = styleTextYPos;
+
+        StringWidget prefixLabel = new StringWidget(x, yPos, width, 12, 
+            Component.translatable("playernotes.gui.label.prefix"), this.font);
+        this.addRenderableOnly(prefixLabel);
+        yPos += 14;
+
+        wholePrefixField = new EditBox(this.font, x, yPos, width, 18, Component.translatable("playernotes.gui.label.prefix"));
+        wholePrefixField.setValue(currentWholePrefix);
+        this.addRenderableWidget(wholePrefixField);
+        yPos += 24;
+
+        StringWidget playerNameStyleLabel = new StringWidget(x, yPos, width, 12, 
+            Component.translatable("playernotes.gui.label.player_name_style"), this.font);
+        this.addRenderableOnly(playerNameStyleLabel);
+        yPos += 14;
+
+        wholePlayerNameStyleField = new EditBox(this.font, x, yPos, width, 18, Component.translatable("playernotes.gui.label.player_name_style"));
+        wholePlayerNameStyleField.setValue(currentWholePlayerNameStyle);
+        this.addRenderableWidget(wholePlayerNameStyleField);
+        yPos += 20;
+
+        overrideCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.override_player_name"), this.font)
+                .pos(x, yPos)
+                .selected(currentOverridePlayerName)
+                .build();
+        this.addRenderableWidget(overrideCheckbox);
+        yPos += 24;
+
+        StringWidget suffixLabel = new StringWidget(x, yPos, width, 12, 
+            Component.translatable("playernotes.gui.label.suffix"), this.font);
+        this.addRenderableOnly(suffixLabel);
+        yPos += 14;
+
+        wholeSuffixField = new EditBox(this.font, x, yPos, width, 18, Component.translatable("playernotes.gui.label.suffix"));
+        wholeSuffixField.setValue(currentWholeSuffix);
+        this.addRenderableWidget(wholeSuffixField);
+        yPos += 24;
+
+        enabledCheckbox = Checkbox.builder(Component.translatable("playernotes.gui.label.enabled"), this.font)
+                .pos(x, yPos)
+                .selected(currentEnabled)
+                .build();
+        this.addRenderableWidget(enabledCheckbox);
+        yPos += 24;
+
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("playernotes.gui.button.prefix_format_help"),
+                (button) -> {
+                    saveCurrentState();
+                    if (this.minecraft != null) {
+                        this.minecraft.setScreen(new PrefixFormatHelpScreen(this));
+                    }
+                })
+                .size(Math.min(120, width), 18)
+                .pos(x, yPos)
+                .build());
+    }
+
     private Component getStyleModeLabel(StyleMode mode) {
         switch (mode) {
             case PREFIX:
@@ -235,21 +323,15 @@ public class PlayerListEditScreen extends Screen {
     }
 
     private void cycleStyleMode() {
+        saveCurrentState();
+        
         StyleMode[] modes = StyleMode.values();
         int currentIndex = currentStyleMode.ordinal();
         int nextIndex = (currentIndex + 1) % modes.length;
         currentStyleMode = modes[nextIndex];
         styleModeBtn.setMessage(getStyleModeLabel(currentStyleMode));
-    }
-
-    @Override
-    public void onClose() {
-        if (isNewList) {
-            NoteListManager.removeNoteList(noteList);
-        }
-        if (this.minecraft != null) {
-            this.minecraft.setScreen(parent);
-        }
+        
+        rebuildWidgets();
     }
 
     private void saveCurrentState() {
@@ -259,8 +341,30 @@ public class PlayerListEditScreen extends Screen {
         if (styleTextField != null) {
             currentStyleText = styleTextField.getValue();
         }
+        if (wholePrefixField != null) {
+            currentWholePrefix = wholePrefixField.getValue();
+        }
+        if (wholePlayerNameStyleField != null) {
+            currentWholePlayerNameStyle = wholePlayerNameStyleField.getValue();
+        }
+        if (wholeSuffixField != null) {
+            currentWholeSuffix = wholeSuffixField.getValue();
+        }
+        if (overrideCheckbox != null) {
+            currentOverridePlayerName = overrideCheckbox.selected();
+        }
         if (enabledCheckbox != null) {
             currentEnabled = enabledCheckbox.selected();
+        }
+    }
+
+    @Override
+    public void onClose() {
+        if (isNewList) {
+            NoteListManager.removeNoteList(noteList);
+        }
+        if (this.minecraft != null) {
+            this.minecraft.setScreen(parent);
         }
     }
 
@@ -314,15 +418,21 @@ public class PlayerListEditScreen extends Screen {
     }
 
     private void saveAndClose() {
-        String newName = nameField.getValue();
+        saveCurrentState();
+        
+        String newName = currentName;
         if (NoteListManager.listNameExistsExcluding(newName, noteList)) {
             showFeedback(Component.translatable("playernotes.gui.message.list_name_exists").withStyle(ChatFormatting.RED));
             return;
         }
         noteList.setName(newName);
         noteList.setStyleMode(currentStyleMode);
-        noteList.setStyleText(styleTextField.getValue());
-        noteList.setEnabled(enabledCheckbox.selected());
+        noteList.setStyleText(currentStyleText);
+        noteList.setWholePrefix(currentWholePrefix);
+        noteList.setWholePlayerNameStyle(currentWholePlayerNameStyle);
+        noteList.setWholeSuffix(currentWholeSuffix);
+        noteList.setOverridePlayerName(currentOverridePlayerName);
+        noteList.setEnabled(currentEnabled);
 
         if (isNewList && !NoteListManager.getNoteLists().contains(noteList)) {
             NoteListManager.addNoteList(noteList);
@@ -344,20 +454,30 @@ public class PlayerListEditScreen extends Screen {
         context.drawString(this.font, Component.translatable("playernotes.gui.label.players").getString() + ":", rightColumnX, 10, 0xAAAAAA);
 
         StringBuilder preview = new StringBuilder();
-        String styleText = styleTextField.getValue().replace("&", "§");
-        switch (currentStyleMode) {
-            case PREFIX:
-                preview.append(styleText).append("§r ").append("PlayerName");
-                break;
-            case SUFFIX:
-                preview.append("PlayerName").append(" ").append(styleText);
-                break;
-            case PLAYER_NAME:
-                preview.append(styleText).append("PlayerName").append("§r");
-                break;
-            case WHOLE:
-                preview.append(styleText).append("PlayerName");
-                break;
+        if (currentStyleMode == StyleMode.WHOLE) {
+            String prefix = currentWholePrefix.replace("&", "§");
+            String playerNameStyle = currentWholePlayerNameStyle.replace("&", "§");
+            String suffix = currentWholeSuffix.replace("&", "§");
+            if (currentOverridePlayerName && !playerNameStyle.isEmpty()) {
+                preview.append(prefix).append(playerNameStyle).append(suffix);
+            } else {
+                preview.append(prefix).append(playerNameStyle).append("PlayerName").append(suffix);
+            }
+        } else {
+            String styleText = currentStyleText.replace("&", "§");
+            switch (currentStyleMode) {
+                case PREFIX:
+                    preview.append(styleText).append("§r ").append("PlayerName");
+                    break;
+                case SUFFIX:
+                    preview.append("PlayerName").append(" ").append(styleText);
+                    break;
+                case PLAYER_NAME:
+                    preview.append(styleText).append("PlayerName").append("§r");
+                    break;
+                case WHOLE:
+                    break;
+            }
         }
         context.drawString(this.font, Component.translatable("playernotes.gui.label.preview").getString() + ": " + preview, 10, this.height - 50, 0xFFFFFF);
 
@@ -368,9 +488,15 @@ public class PlayerListEditScreen extends Screen {
         }
 
         nameField.render(context, mouseX, mouseY, delta);
-        styleTextField.render(context, mouseX, mouseY, delta);
-        addPlayerField.render(context, mouseX, mouseY, delta);
-        playersWidget.render(context, mouseX, mouseY, delta);
+        if (currentStyleMode == StyleMode.WHOLE) {
+            if (wholePrefixField != null) wholePrefixField.render(context, mouseX, mouseY, delta);
+            if (wholePlayerNameStyleField != null) wholePlayerNameStyleField.render(context, mouseX, mouseY, delta);
+            if (wholeSuffixField != null) wholeSuffixField.render(context, mouseX, mouseY, delta);
+        } else {
+            if (styleTextField != null) styleTextField.render(context, mouseX, mouseY, delta);
+        }
+        if (addPlayerField != null) addPlayerField.render(context, mouseX, mouseY, delta);
+        if (playersWidget != null) playersWidget.render(context, mouseX, mouseY, delta);
     }
 
     public static class PrefixFormatHelpScreen extends Screen {
@@ -498,6 +624,13 @@ public class PlayerListEditScreen extends Screen {
             if (this.minecraft != null) {
                 this.minecraft.setScreen(parent);
             }
+        }
+
+        @Override
+        public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+            this.renderBackground(context, mouseX, mouseY, delta);
+            context.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+            super.render(context, mouseX, mouseY, delta);
         }
     }
 }
